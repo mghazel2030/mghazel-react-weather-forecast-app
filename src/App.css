@@ -2,13 +2,12 @@
 File name: App.css
 ====================================================
 Description:
-Provides basic layout styling for STEP 2 of the Weather
-Forecasting App. Advanced styling and component-specific
-CSS will be introduced during the dedicated styling step.
+Provides application-level layout and STEP 3 component
+presentation styles.
 
 Date: 28-Aug-2026
 Author: mghazel
-Version: 2.0
+Version: 3.0
 ==================================================*/
 
 .app {
@@ -40,29 +39,26 @@ Version: 2.0
   border-radius: 8px;
 }
 
-.search-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.search-controls {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.search-controls input {
-  flex: 1;
-  padding: 0.75rem;
-}
-
-.search-controls button {
-  padding: 0.75rem 1.5rem;
+.search-section button,
+.weather-card button {
+  padding: 0.75rem 1.25rem;
   cursor: pointer;
+}
+
+.weather-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .weather-details {
   margin-top: 1rem;
+}
+
+.step-note {
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }
 
 .app-footer {
@@ -71,7 +67,8 @@ Version: 2.0
 }
 
 @media (max-width: 600px) {
-  .search-controls {
+  .weather-card-header {
+    align-items: flex-start;
     flex-direction: column;
   }
 }
