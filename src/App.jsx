@@ -2,23 +2,24 @@
 // File name: App.jsx
 //==================================================
 // Description:
-// Defines the root component for the Weather Forecasting App.
+// Root component for the Weather Forecasting App.
 //
-// STEP 3 introduces React state management using useState and
-// demonstrates parent-to-child data flow using props.
+// STEP 4 extends the application with React form/event
+// handling. App owns the selected application city while
+// SearchBar manages draft form input locally.
 //
 // Processing Workflow:
-// 1. Initialize application state.
-// 2. Store the selected city.
-// 3. Store sample weather information.
-// 4. Store the selected temperature unit.
-// 5. Pass state values to child components through props.
-// 6. Update state in response to user interaction.
-// 7. Allow React to re-render affected components.
+// 1. Initialize application-level state.
+// 2. Pass the selected city to child components.
+// 3. Receive a validated city from SearchBar.
+// 4. Update the selected city state.
+// 5. Re-render child components with updated props.
+// 6. Maintain temperature-unit functionality introduced
+//    during STEP 3.
 //
-// Date: 28-Aug-2026
+// Date: 31-Aug-2026
 // Author: mghazel
-// Version: 3.0
+// Version: 4.0
 //==================================================
 
 import { useState } from "react";
@@ -31,16 +32,16 @@ import Footer from "./components/Footer/Footer";
 import "./App.css";
 
 /**
- * Root Weather Forecasting App component.
+ * Root component for the Weather Forecasting App.
  *
- * Manages the primary application state and passes required
- * data to child components using React props.
+ * Maintains application-level weather state and coordinates
+ * data flow between the search and weather-display components.
  *
- * @returns {JSX.Element} The complete application user interface.
+ * @returns {JSX.Element} The complete application interface.
  */
 function App() {
   // --------------------------------------------------
-  // State: Current Location
+  // State: Selected Location
   // --------------------------------------------------
   const [city, setCity] = useState("Calgary");
 
@@ -50,7 +51,7 @@ function App() {
   const [unit, setUnit] = useState("C");
 
   // --------------------------------------------------
-  // State: Sample Weather Data
+  // State: Sample Weather Information
   // --------------------------------------------------
   const [weather] = useState({
     temperatureCelsius: 21,
@@ -60,29 +61,29 @@ function App() {
   });
 
   /**
-   * Toggles the displayed temperature unit.
+   * Updates the selected application city.
    *
-   * The actual temperature conversion is performed in the
-   * WeatherCard component based on the selected unit.
+   * SearchBar performs input-level validation before
+   * invoking this callback.
+   *
+   * @param {string} selectedCity
+   * Validated city or location entered by the user.
+   *
+   * @returns {void}
+   */
+  function handleCitySearch(selectedCity) {
+    setCity(selectedCity);
+  }
+
+  /**
+   * Toggles the displayed temperature unit between Celsius
+   * and Fahrenheit.
    *
    * @returns {void}
    */
   function handleToggleUnit() {
-    setUnit((currentUnit) => (currentUnit === "C" ? "F" : "C"));
-  }
-
-  /**
-   * Demonstrates a simple state update by rotating through
-   * predefined sample cities.
-   *
-   * This temporary functionality is used only for STEP 3.
-   * A real search form will be implemented in a later step.
-   *
-   * @returns {void}
-   */
-  function handleChangeCity() {
-    setCity((currentCity) =>
-      currentCity === "Calgary" ? "Toronto" : "Calgary"
+    setUnit((currentUnit) =>
+      currentUnit === "C" ? "F" : "C"
     );
   }
 
@@ -93,7 +94,7 @@ function App() {
       <main className="app-main">
         <SearchBar
           city={city}
-          onChangeCity={handleChangeCity}
+          onSearch={handleCitySearch}
         />
 
         <WeatherCard
