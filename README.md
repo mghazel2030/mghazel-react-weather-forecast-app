@@ -1,16 +1,124 @@
-# React + Vite
+# React Weather Forecasting App
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A responsive React + Vite weather forecasting application developed
+through a disciplined seven-step software-development process.
 
-Currently, two official plugins are available:
+The project progressively introduces modern React concepts, Git/GitHub
+branching and Pull Request workflows, Continuous Integration, API-based
+weather retrieval, testing, and production deployment.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> **Current Development Status:** STEP 5 of 7  
+> STEP 5 introduces the professional UI foundation, forecast-component
+> architecture, GitHub Actions Continuous Integration, and expanded
+> project documentation.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 1. Project Overview
 
-## Expanding the Oxlint configuration
+The React Weather Forecasting App provides an interactive user interface
+for searching weather information by city or location.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The project is being developed incrementally rather than as one large
+implementation. Each major development step introduces a focused set of
+React, software-engineering, Git/GitHub, testing, or deployment concepts.
+
+The final application is intended to provide a professional weather
+dashboard containing current weather conditions, short-term forecasts,
+multi-day forecasts, useful weather metrics, responsive presentation,
+and production deployment.
+
+---
+
+## 2. Project Objectives
+
+The major objectives are to:
+
+- Develop a responsive weather forecasting application using React.
+- Apply reusable component-based front-end architecture.
+- Practice JSX, props, state, Hooks, events, and controlled forms.
+- Integrate real weather information through an external API.
+- Implement responsive and accessible user-interface design.
+- Practice disciplined Git and GitHub branch management.
+- Use Pull Requests for feature integration and release promotion.
+- Introduce automated Continuous Integration using GitHub Actions.
+- Add testing and production-quality verification.
+- Deploy the completed application to a production hosting environment.
+- Document the complete engineering process and lessons learned.
+
+---
+
+## 3. Current Features
+
+As of STEP 5, the application includes:
+
+- React + Vite project architecture
+- Reusable functional React components
+- Controlled location-search form
+- React event handling
+- Input validation
+- Parent/child state communication
+- Celsius/Fahrenheit display switching
+- Current-weather dashboard component
+- Short-term hourly forecast component
+- Seven-day forecast component
+- Responsive desktop/mobile presentation
+- Accessibility-oriented form markup
+- Git feature/develop/main workflow
+- Pull Request-based integration/release workflow
+- GitHub Actions Continuous Integration
+- ESLint quality checks
+- Automated production-build verification
+
+### STEP 5 Data Limitation
+
+Weather and forecast values used during STEP 5 are sample presentation
+data. Real weather information will be connected during a later
+development step.
+
+---
+
+## 4. Technology Stack
+
+| Category | Technology |
+|---|---|
+| Front End | React |
+| Build Tool | Vite |
+| Language | JavaScript / JSX |
+| Styling | CSS |
+| Package Management | npm |
+| Source Control | Git |
+| Repository Hosting | GitHub |
+| CI | GitHub Actions |
+| Linting | ESLint |
+| Production Build | Vite |
+| Weather API | Planned for a later step |
+| Deployment | Planned for STEP 7 |
+
+---
+
+## 5. High-Level Application Architecture
+
+```text
+App
+│
+├── Header
+│
+├── SearchBar
+│   ├── Controlled input
+│   ├── Local form state
+│   ├── Validation
+│   └── onSearch callback
+│
+├── WeatherCard
+│   ├── Current temperature
+│   ├── Conditions
+│   └── Weather metrics
+│
+├── HourlyForecast
+│   └── Short-term forecast cards
+│
+├── DailyForecast
+│   └── Seven-day forecast rows
+│
+└── Footer
