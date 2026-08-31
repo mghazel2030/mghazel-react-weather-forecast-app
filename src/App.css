@@ -1,19 +1,35 @@
-/*==================================================
+/*============================================================
 File name: App.css
-====================================================
+==============================================================
 Description:
-Application-level styles for the Weather Forecasting App.
+Primary application styling for the React Weather Forecasting
+App.
 
-STEP 4 adds presentation rules for:
-- controlled location-search form
-- labels and text inputs
-- validation feedback
-- responsive form layout
+STEP 5 introduces the first major visual refinement toward the
+final professional weather-dashboard interface.
 
-Date: 31-Aug-2026
+Table of Contents:
+1. Application Shell
+2. Header
+3. Search Panel
+4. Buttons
+5. Current Weather Card
+6. Forecast Sections
+7. Hourly Forecast
+8. Daily Forecast
+9. Footer
+10. Utilities
+11. Responsive Design
+
 Author: mghazel
-Version: 4.0
-==================================================*/
+Date: 31-Aug-2026
+Version: 5.0
+============================================================*/
+
+
+/*============================================================
+1. APPLICATION SHELL
+============================================================*/
 
 .app {
   min-height: 100vh;
@@ -21,107 +37,397 @@ Version: 4.0
   flex-direction: column;
 }
 
-.app-header {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-
-.app-header h1 {
-  margin-bottom: 0.5rem;
-}
-
 .app-main {
-  width: min(100% - 2rem, 1000px);
+  width: min(100% - 2rem, 1040px);
   margin: 0 auto;
+  padding: 0 0 3rem;
   flex: 1;
 }
 
-.search-section,
-.weather-card {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+
+/*============================================================
+2. HEADER
+============================================================*/
+
+.app-header {
+  width: min(100% - 2rem, 1040px);
+  margin: 2rem auto 1rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
 }
 
-.current-location {
+.app-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #17215a;
+}
+
+.app-header p {
+  max-width: 700px;
+  margin: 0.6rem auto 0;
+  color: #596273;
+  line-height: 1.6;
+}
+
+
+/*============================================================
+3. SEARCH PANEL
+============================================================*/
+
+.search-panel {
   margin-bottom: 1rem;
 }
 
 .search-form {
   display: flex;
-  align-items: flex-end;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 0.75rem;
 }
 
-.form-group {
+.search-input-wrapper {
   flex: 1;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.form-group input {
+.search-input-wrapper input {
   width: 100%;
-  padding: 0.75rem;
+  min-height: 46px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #c9d0dc;
+  border-radius: 8px;
+  background: #f8faff;
+  color: #202737;
   font: inherit;
-  border: 1px solid #aaa;
-  border-radius: 6px;
+  box-sizing: border-box;
 }
 
-.form-group input:focus {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.search-form button,
-.weather-card button {
-  padding: 0.75rem 1.25rem;
-  font: inherit;
-  cursor: pointer;
+.search-input-wrapper input:focus {
+  outline: 3px solid rgba(37, 53, 165, 0.18);
+  border-color: #2535a5;
 }
 
 .form-error {
-  margin-top: 0.5rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
   font-weight: 600;
+  color: #a12020;
 }
 
-.weather-card-header {
+
+/*============================================================
+4. BUTTONS
+============================================================*/
+
+.button,
+.unit-toggle {
+  min-height: 46px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.button:hover,
+.unit-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.button:focus-visible,
+.unit-toggle:focus-visible {
+  outline: 3px solid rgba(37, 53, 165, 0.3);
+  outline-offset: 2px;
+}
+
+.button-primary {
+  background: #202c99;
+  color: #ffffff;
+}
+
+.button-secondary {
+  background: #79818d;
+  color: #ffffff;
+}
+
+
+/*============================================================
+5. CURRENT WEATHER CARD
+============================================================*/
+
+.current-weather-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 2rem;
+  margin: 1rem 0 1.5rem;
+  padding: 1.6rem;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      #202c99,
+      #293aa9
+    );
+  color: #ffffff;
+  box-shadow:
+    0 12px 30px rgba(31, 44, 132, 0.18);
+}
+
+.current-weather-primary {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.weather-icon {
+  font-size: 3.5rem;
+}
+
+.current-weather-primary h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.weather-condition {
+  margin: 0.3rem 0;
+  opacity: 0.9;
+}
+
+.current-temperature {
+  margin: 0.35rem 0 0;
+  font-size: clamp(2.3rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.feels-like {
+  margin: 0.5rem 0 0;
+  opacity: 0.85;
+}
+
+.weather-metrics {
+  display: grid;
+  gap: 0.55rem;
+  align-content: center;
+}
+
+.weather-metric {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.16);
+}
+
+.weather-metric span {
+  opacity: 0.82;
+}
+
+.unit-toggle {
+  position: absolute;
+  right: 1rem;
+  bottom: -1.1rem;
+  min-height: auto;
+  background: #ffffff;
+  color: #202c99;
+  box-shadow:
+    0 5px 15px rgba(20, 30, 90, 0.15);
+}
+
+
+/*============================================================
+6. FORECAST SECTIONS
+============================================================*/
+
+.forecast-section {
+  margin: 2rem 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: #1e294d;
+  font-size: 1.1rem;
+}
+
+.section-caption {
+  color: #788196;
+  font-size: 0.8rem;
+}
+
+
+/*============================================================
+7. HOURLY FORECAST
+============================================================*/
+
+.hourly-forecast {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(92px, 1fr);
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding: 0.2rem 0.1rem 0.8rem;
+}
+
+.hourly-card {
+  min-width: 92px;
+  padding: 0.85rem 0.6rem;
+  border: 1px solid #d8dde7;
+  border-radius: 10px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow:
+    0 3px 10px rgba(30, 40, 90, 0.05);
+}
+
+.forecast-time {
+  margin: 0 0 0.45rem;
+  color: #596273;
+  font-size: 0.8rem;
+}
+
+.forecast-icon {
+  margin-bottom: 0.4rem;
+  font-size: 1.35rem;
+}
+
+
+/*============================================================
+8. DAILY FORECAST
+============================================================*/
+
+.daily-forecast {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.daily-forecast-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d8dde7;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow:
+    0 3px 10px rgba(30, 40, 90, 0.05);
 }
 
-.weather-details {
-  margin-top: 1rem;
+.daily-forecast-day {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.step-note {
-  margin-top: 1rem;
-  font-size: 0.9rem;
+.daily-temperatures {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 88px;
+  justify-content: flex-end;
 }
+
+.daily-temperatures strong {
+  color: #202c99;
+}
+
+.daily-temperatures span {
+  color: #697186;
+}
+
+
+/*============================================================
+9. FOOTER
+============================================================*/
 
 .app-footer {
+  padding: 1.5rem;
+  border-top: 2px solid #202c99;
   text-align: center;
-  padding: 1rem;
+  color: #4e5667;
+  font-size: 0.85rem;
 }
 
-@media (max-width: 600px) {
+
+/*============================================================
+10. UTILITIES
+============================================================*/
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/*============================================================
+11. RESPONSIVE DESIGN
+============================================================*/
+
+@media (max-width: 720px) {
   .search-form {
-    align-items: stretch;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
-  .search-form button {
-    width: 100%;
+  .search-input-wrapper {
+    flex-basis: 100%;
   }
 
-  .weather-card-header {
+  .button {
+    flex: 1;
+  }
+
+  .current-weather-card {
+    grid-template-columns: 1fr;
+  }
+
+  .unit-toggle {
+    position: static;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main,
+  .app-header {
+    width: min(100% - 1rem, 1040px);
+  }
+
+  .app-header {
+    margin-top: 1rem;
+  }
+
+  .current-weather-card {
+    padding: 1.2rem;
+  }
+
+  .current-weather-primary {
     align-items: flex-start;
-    flex-direction: column;
+  }
+
+  .weather-icon {
+    font-size: 2.5rem;
+  }
+
+  .daily-forecast-row {
+    padding: 0.8rem;
   }
 }

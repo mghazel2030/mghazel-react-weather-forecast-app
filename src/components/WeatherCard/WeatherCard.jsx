@@ -2,41 +2,54 @@
 // File name: WeatherCard.jsx
 //==================================================
 // Description:
-// Displays dynamic weather information received from App.jsx
-// through React props.
+// Displays the current weather summary and major weather
+// metrics for the selected location.
 //
-// STEP 3 demonstrates:
-// - props
-// - derived values
-// - conditional rendering
-// - parent-to-child data flow
-// - callback props
+// STEP 5 introduces a more professional dashboard-style
+// presentation inspired by the previous weather application.
 //
-// Date: 28-Aug-2026
 // Author: mghazel
-// Version: 3.0
+// Date: 31-Aug-2026
+// Version: 5.0
 //==================================================
 
 /**
- * Renders weather information for the selected city.
+ * Converts Celsius to Fahrenheit.
  *
- * @param {Object} props - Component properties.
- * @param {string} props.city - Selected city.
- * @param {Object} props.weather - Weather information.
- * @param {number} props.weather.temperatureCelsius
- * Temperature in Celsius.
- * @param {number} props.weather.humidity
- * Relative humidity percentage.
- * @param {number} props.weather.windSpeed
- * Wind speed in kilometres per hour.
- * @param {string} props.weather.condition
- * Human-readable weather condition.
- * @param {string} props.unit
- * Temperature unit: "C" or "F".
- * @param {Function} props.onToggleUnit
- * Callback for changing the temperature unit.
+ * @param {number} celsius Temperature in Celsius.
+ * @returns {number} Temperature in Fahrenheit.
+ */
+function convertCelsiusToFahrenheit(celsius) {
+  return (celsius * 9) / 5 + 32;
+}
+
+/**
+ * Formats a Celsius temperature in the selected display unit.
  *
- * @returns {JSX.Element} The weather information card.
+ * @param {number} celsius Temperature in Celsius.
+ * @param {string} unit Selected unit: C or F.
+ *
+ * @returns {string} Formatted temperature.
+ */
+function formatTemperature(celsius, unit) {
+  const temperature =
+    unit === "C"
+      ? celsius
+      : convertCelsiusToFahrenheit(celsius);
+
+  return `${Math.round(temperature)}°${unit}`;
+}
+
+/**
+ * Displays current weather information.
+ *
+ * @param {Object} props Component properties.
+ * @param {string} props.city Selected city.
+ * @param {Object} props.weather Current weather information.
+ * @param {string} props.unit Selected temperature unit.
+ * @param {Function} props.onToggleUnit Unit-toggle callback.
+ *
+ * @returns {JSX.Element} Current weather dashboard card.
  */
 function WeatherCard({
   city,
@@ -44,60 +57,76 @@ function WeatherCard({
   unit,
   onToggleUnit,
 }) {
-  /**
-   * Converts Celsius to Fahrenheit.
-   *
-   * @param {number} celsius - Temperature in Celsius.
-   * @returns {number} Temperature in Fahrenheit.
-   */
-  function convertCelsiusToFahrenheit(celsius) {
-    return (celsius * 9) / 5 + 32;
-  }
-
-  const displayedTemperature =
-    unit === "C"
-      ? weather.temperatureCelsius
-      : convertCelsiusToFahrenheit(
-          weather.temperatureCelsius
-        );
-
   return (
-    <section className="weather-card">
-      <div className="weather-card-header">
-        <div>
-          <h2>Weather Information</h2>
-          <h3>{city}</h3>
+    <section className="current-weather-card">
+      <div className="current-weather-primary">
+        <div
+          className="weather-icon"
+          aria-hidden="true"
+        >
+          {weather.weatherIcon}
         </div>
 
-        <button
-          type="button"
-          onClick={onToggleUnit}
-        >
-          Show °{unit === "C" ? "F" : "C"}
-        </button>
+        <div>
+          <h2>
+            {city}, {weather.country}
+          </h2>
+
+          <p className="weather-condition">
+            {weather.condition}
+          </p>
+
+          <p className="current-temperature">
+            {formatTemperature(
+              weather.temperatureCelsius,
+              unit
+            )}
+          </p>
+
+          <p className="feels-like">
+            Feels like{" "}
+            {formatTemperature(
+              weather.feelsLikeCelsius,
+              unit
+            )}
+          </p>
+        </div>
       </div>
 
-      <div className="weather-details">
-        <p>
-          <strong>Temperature:</strong>{" "}
-          {displayedTemperature.toFixed(1)} °{unit}
-        </p>
+      <div className="weather-metrics">
+        <div className="weather-metric">
+          <span>Humidity</span>
+          <strong>{weather.humidity}%</strong>
+        </div>
 
-        <p>
-          <strong>Humidity:</strong>{" "}
-          {weather.humidity}%
-        </p>
+        <div className="weather-metric">
+          <span>Wind</span>
+          <strong>{weather.windSpeed} km/h</strong>
+        </div>
 
-        <p>
-          <strong>Wind Speed:</strong>{" "}
-          {weather.windSpeed} km/h
-        </p>
+        <div className="weather-metric">
+          <span>UV Index</span>
+          <strong>{weather.uvIndex}</strong>
+        </div>
 
-        <p>
-          <strong>Conditions:</strong>{" "}
-          {weather.condition}
-        </p>
+        <div className="weather-metric">
+          <span>Sunrise</span>
+          <strong>{weather.sunrise}</strong>
+        </div>
+
+        <div className="weather-metric">
+          <span>Sunset</span>
+          <strong>{weather.sunset}</strong>
+        </div>
       </div>
+
+      <button
+        type="button"
+        className="unit-toggle"
+        onClick={onToggleUnit}
+      >
+        Display °{unit === "C" ? "F" : "C"}
+      </button>
     </section>
   );
 }
