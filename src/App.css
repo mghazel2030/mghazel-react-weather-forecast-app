@@ -2,12 +2,17 @@
 File name: App.css
 ====================================================
 Description:
-Provides application-level layout and STEP 3 component
-presentation styles.
+Application-level styles for the Weather Forecasting App.
 
-Date: 28-Aug-2026
+STEP 4 adds presentation rules for:
+- controlled location-search form
+- labels and text inputs
+- validation feedback
+- responsive form layout
+
+Date: 31-Aug-2026
 Author: mghazel
-Version: 3.0
+Version: 4.0
 ==================================================*/
 
 .app {
@@ -39,10 +44,49 @@ Version: 3.0
   border-radius: 8px;
 }
 
-.search-section button,
+.current-location {
+  margin-bottom: 1rem;
+}
+
+.search-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  font: inherit;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+}
+
+.form-group input:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.search-form button,
 .weather-card button {
   padding: 0.75rem 1.25rem;
+  font: inherit;
   cursor: pointer;
+}
+
+.form-error {
+  margin-top: 0.5rem;
+  font-weight: 600;
 }
 
 .weather-card-header {
@@ -67,6 +111,15 @@ Version: 3.0
 }
 
 @media (max-width: 600px) {
+  .search-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-form button {
+    width: 100%;
+  }
+
   .weather-card-header {
     align-items: flex-start;
     flex-direction: column;
