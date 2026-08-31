@@ -2,48 +2,50 @@
 // File name: SearchBar.jsx
 //==================================================
 // Description:
-// Defines the initial reusable location-search user interface
-// for the Weather Forecasting App.
+// Defines the STEP 3 location-selection component.
 //
-// During STEP 2 this component is presentational only. Event
-// handling and application state will be implemented in later
-// development steps.
+// The component demonstrates React props and parent-child
+// communication. It receives the current city and a callback
+// function from App.jsx.
 //
 // Date: 28-Aug-2026
 // Author: mghazel
-// Version: 2.0
+// Version: 3.0
 //==================================================
 
 /**
- * Renders the weather location search interface.
+ * Renders the current location and provides a temporary
+ * control for changing the selected city.
  *
- * STEP 2 intentionally provides only the JSX structure.
- * Search events and state management will be introduced in
- * subsequent lectures.
+ * @param {Object} props - Component properties.
+ * @param {string} props.city - Currently selected city.
+ * @param {Function} props.onChangeCity - Callback used to
+ * update the selected city in the parent component.
  *
- * @returns {JSX.Element} The location search interface.
+ * @returns {JSX.Element} The location-selection interface.
  */
-function SearchBar() {
+function SearchBar({ city, onChangeCity }) {
   return (
     <section className="search-section">
-      <h2>Search Weather</h2>
+      <h2>Location</h2>
 
-      <form className="search-form">
-        <label htmlFor="city-input">City or Location</label>
+      <p>
+        Current city:
+        {" "}
+        <strong>{city}</strong>
+      </p>
 
-        <div className="search-controls">
-          <input
-            id="city-input"
-            name="city"
-            type="text"
-            placeholder="Example: Calgary"
-          />
+      <button
+        type="button"
+        onClick={onChangeCity}
+      >
+        Change Sample City
+      </button>
 
-          <button type="button">
-            Search
-          </button>
-        </div>
-      </form>
+      <p className="step-note">
+        STEP 3 uses predefined sample cities.
+        A complete search form will be implemented later.
+      </p>
     </section>
   );
 }
