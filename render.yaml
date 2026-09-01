@@ -7,7 +7,7 @@
 #
 # GitHub main
 #      ↓
-# GitHub CI
+# GitHub Actions CI
 #      ↓
 # CI Checks Pass
 #      ↓
@@ -15,11 +15,11 @@
 #      ↓
 # dist/
 #      ↓
-# Render Global Static Hosting
+# Render Static Site Deployment
 #
 # Author: mghazel
 # Date: 01-Sep-2026
-# Version: 1.0
+# Version: 1.1
 # ============================================================
 
 services:
@@ -36,4 +36,4 @@ services:
 
     staticPublishPath: ./dist
 
-    autoDeployTrigger: checksPassnpm run dev
+    autoDeployTrigger: checksPass
