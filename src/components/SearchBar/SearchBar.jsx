@@ -2,23 +2,12 @@
 // File name: SearchBar.jsx
 // ============================================================
 // Objective:
-// Provide a controlled, accessible city/location search form.
-//
-// Responsibilities:
-// 1. Maintain local input state.
-// 2. Validate user input.
-// 3. Display form-validation errors.
-// 4. Submit valid locations to App.jsx.
-// 5. Clear input/error state.
-// 6. Disable controls during asynchronous weather requests.
-//
-// STEP 6 Addition:
-// The isLoading prop prevents repeated weather requests while
-// an existing request is in progress.
+// Provide city search, browser geolocation, and clear/reset
+// controls.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 6.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -27,28 +16,18 @@ import {
 
 
 /**
- * Search form used to submit city/location names.
+ * Final weather search controls.
  *
- * @param {Object} props
- * @param {string} props.city
- * Currently displayed location.
- * @param {Function} props.onSearch
- * Parent callback invoked for valid search input.
- * @param {boolean} props.isLoading
- * Whether a weather request is currently active.
- *
- * @returns {JSX.Element}
- * Controlled location-search form.
+ * @param {Object} props Properties.
+ * @returns {JSX.Element} Search interface.
  */
 function SearchBar({
   city,
   onSearch,
+  onUseMyLocation,
+  onClear,
   isLoading,
 }) {
-  // ----------------------------------------------------------
-  // LOCAL FORM STATE
-  // ----------------------------------------------------------
-
   const [
     cityInput,
     setCityInput,
@@ -60,21 +39,6 @@ function SearchBar({
   ] = useState("");
 
 
-  // ----------------------------------------------------------
-  // INPUT HANDLER
-  // ----------------------------------------------------------
-
-  /**
-   * Synchronizes the text input with React state.
-   *
-   * Existing validation feedback is cleared when the user
-   * begins correcting the input.
-   *
-   * @param {React.ChangeEvent<HTMLInputElement>} event
-   * Input-change event.
-   *
-   * @returns {void}
-   */
   function handleInputChange(
     event
   ) {
@@ -88,21 +52,6 @@ function SearchBar({
   }
 
 
-  // ----------------------------------------------------------
-  // SUBMIT HANDLER
-  // ----------------------------------------------------------
-
-  /**
-   * Validates and submits a city/location.
-   *
-   * event.preventDefault() prevents the browser's traditional
-   * HTML form navigation/reload so React remains in control.
-   *
-   * @param {React.FormEvent<HTMLFormElement>} event
-   * Form submit event.
-   *
-   * @returns {void}
-   */
   function handleSubmit(
     event
   ) {
@@ -129,24 +78,14 @@ function SearchBar({
   }
 
 
-  // ----------------------------------------------------------
-  // CLEAR HANDLER
-  // ----------------------------------------------------------
-
-  /**
-   * Clears the form input and validation feedback.
-   *
-   * @returns {void}
-   */
   function handleClear() {
     setCityInput("");
+
     setErrorMessage("");
+
+    onClear();
   }
 
-
-  // ----------------------------------------------------------
-  // RENDER
-  // ----------------------------------------------------------
 
   return (
     <section
@@ -198,6 +137,20 @@ function SearchBar({
           {isLoading
             ? "Searching..."
             : "Search"}
+        </button>
+
+        <button
+          className="
+            button
+            button-location
+          "
+          type="button"
+          onClick={
+            onUseMyLocation
+          }
+          disabled={isLoading}
+        >
+          📍 Use My Location
         </button>
 
         <button

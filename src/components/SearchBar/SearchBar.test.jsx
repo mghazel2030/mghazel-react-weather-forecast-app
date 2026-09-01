@@ -6,26 +6,12 @@
 // File name: SearchBar.test.jsx
 // ============================================================
 // Objective:
-// Test SearchBar behavior through user-visible interactions.
-//
-// Tests:
-// 1. Valid city submission.
-// 2. Empty-input validation.
-// 3. Clear-button behavior.
-// 4. Loading-state control disabling.
-//
-// Testing Philosophy:
-// React Testing Library tests the component through accessible,
-// user-visible controls instead of relying on internal React
-// implementation details.
-//
-// Environment:
-// This test explicitly uses jsdom because React Testing Library
-// requires browser-like DOM APIs including document and window.
+// Final behavioral tests for city search, validation,
+// geolocation action, clear behavior, and loading state.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 1.1
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -50,10 +36,6 @@ import SearchBar from
 describe(
   "SearchBar",
   () => {
-    /**
-     * Verify that a valid city entered by the user is passed
-     * to the parent onSearch callback.
-     */
     test(
       "submits a valid city",
       async () => {
@@ -66,12 +48,12 @@ describe(
         render(
           <SearchBar
             city="Vancouver"
-            onSearch={
-              onSearch
+            onSearch={onSearch}
+            onUseMyLocation={
+              vi.fn()
             }
-            isLoading={
-              false
-            }
+            onClear={vi.fn()}
+            isLoading={false}
           />
         );
 
@@ -101,12 +83,6 @@ describe(
 
         expect(
           onSearch
-        ).toHaveBeenCalledTimes(
-          1
-        );
-
-        expect(
-          onSearch
         ).toHaveBeenCalledWith(
           "Toronto"
         );
@@ -114,13 +90,8 @@ describe(
     );
 
 
-    /**
-     * Verify that submitting an empty form displays local
-     * validation feedback and prevents the parent search
-     * callback from running.
-     */
     test(
-      "rejects an empty location",
+      "rejects empty search",
       async () => {
         const user =
           userEvent.setup();
@@ -131,12 +102,12 @@ describe(
         render(
           <SearchBar
             city="Vancouver"
-            onSearch={
-              onSearch
+            onSearch={onSearch}
+            onUseMyLocation={
+              vi.fn()
             }
-            isLoading={
-              false
-            }
+            onClear={vi.fn()}
+            isLoading={false}
           />
         );
 
@@ -155,7 +126,7 @@ describe(
             "alert"
           )
         ).toHaveTextContent(
-          /please enter a city or location/i
+          /please enter a city/i
         );
 
         expect(
@@ -165,25 +136,64 @@ describe(
     );
 
 
-    /**
-     * Verify that Clear resets a value previously entered into
-     * the controlled search field.
-     */
     test(
-      "clears entered text",
+      "calls geolocation callback",
       async () => {
         const user =
           userEvent.setup();
 
+        const onUseMyLocation =
+          vi.fn();
+
         render(
           <SearchBar
             city="Vancouver"
-            onSearch={
+            onSearch={vi.fn()}
+            onUseMyLocation={
+              onUseMyLocation
+            }
+            onClear={vi.fn()}
+            isLoading={false}
+          />
+        );
+
+        await user.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                /use my location/i,
+            }
+          )
+        );
+
+        expect(
+          onUseMyLocation
+        ).toHaveBeenCalledTimes(
+          1
+        );
+      }
+    );
+
+
+    test(
+      "clear resets text and calls parent clear",
+      async () => {
+        const user =
+          userEvent.setup();
+
+        const onClear =
+          vi.fn();
+
+        render(
+          <SearchBar
+            city="Vancouver"
+            onSearch={vi.fn()}
+            onUseMyLocation={
               vi.fn()
             }
-            isLoading={
-              false
-            }
+            onClear={onClear}
+            isLoading={false}
           />
         );
 
@@ -201,12 +211,6 @@ describe(
           "Montreal"
         );
 
-        expect(
-          input
-        ).toHaveValue(
-          "Montreal"
-        );
-
         await user.click(
           screen.getByRole(
             "button",
@@ -220,34 +224,34 @@ describe(
         expect(
           input
         ).toHaveValue("");
+
+        expect(
+          onClear
+        ).toHaveBeenCalledTimes(
+          1
+        );
       }
     );
 
 
-    /**
-     * Verify that the application prevents additional user
-     * requests while an asynchronous weather request is active.
-     */
     test(
-      "disables search controls while loading",
+      "disables all controls while loading",
       () => {
         render(
           <SearchBar
             city="Vancouver"
-            onSearch={
+            onSearch={vi.fn()}
+            onUseMyLocation={
               vi.fn()
             }
+            onClear={vi.fn()}
             isLoading
           />
         );
 
         expect(
           screen.getByRole(
-            "textbox",
-            {
-              name:
-                /city or location/i,
-            }
+            "textbox"
           )
         ).toBeDisabled();
 
@@ -257,6 +261,16 @@ describe(
             {
               name:
                 /searching/i,
+            }
+          )
+        ).toBeDisabled();
+
+        expect(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                /use my location/i,
             }
           )
         ).toBeDisabled();

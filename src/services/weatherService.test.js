@@ -2,23 +2,31 @@
 // File name: weatherService.test.js
 // ============================================================
 // Objective:
-// Verify transformation of Open-Meteo provider data into the
-// application's normalized weather-data model.
+// Verify that Open-Meteo provider data is correctly normalized
+// into the application's stable weather-data model.
 //
-// Important:
-// This test deliberately performs NO live network calls.
+// STEP 7 Additions:
+// - Current precipitation.
+// - Hourly relative humidity.
+// - Hourly precipitation probability.
+// - Daily maximum precipitation probability.
 //
-// Testing Boundary:
+// Important Testing Principle:
+// This test uses an Open-Meteo-shaped fixture and performs NO
+// live network requests. This keeps the test deterministic,
+// fast, and independent of Internet/API availability.
+//
+// Processing Boundary Under Test:
 //
 // Open-Meteo-shaped fixture
 //          ↓
 // normalizeWeatherData()
 //          ↓
-// application data model
+// Application weather model
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 1.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -38,9 +46,15 @@ describe(
     test(
       "normalizes current, hourly, and daily Open-Meteo weather data",
       () => {
-        // -----------------------------------------------------
-        // MOCK LOCATION
-        // -----------------------------------------------------
+        // =====================================================
+        // 1. MOCK LOCATION
+        // =====================================================
+        //
+        // This object simulates the normalized location returned
+        // by the Open-Meteo Geocoding API.
+        //
+        // It is passed directly into normalizeWeatherData().
+        // =====================================================
 
         const location = {
           name:
@@ -66,11 +80,41 @@ describe(
         };
 
 
-        // -----------------------------------------------------
-        // OPEN-METEO-SHAPED FIXTURE
-        // -----------------------------------------------------
+        // =====================================================
+        // 2. OPEN-METEO-SHAPED WEATHER FIXTURE
+        // =====================================================
+        //
+        // This fixture imitates the structure returned by the
+        // Open-Meteo Forecast API.
+        //
+        // STEP 7 introduces several additional fields:
+        //
+        // current:
+        //   precipitation
+        //
+        // hourly:
+        //   relative_humidity_2m
+        //   precipitation_probability
+        //
+        // daily:
+        //   precipitation_probability_max
+        //
+        // These values correspond by ARRAY INDEX.
+        // =====================================================
 
         const apiData = {
+          // ---------------------------------------------------
+          // General API metadata
+          // ---------------------------------------------------
+
+          timezone:
+            "America/Vancouver",
+
+
+          // ---------------------------------------------------
+          // CURRENT WEATHER
+          // ---------------------------------------------------
+
           current: {
             time:
               "2026-08-31T18:30",
@@ -84,12 +128,37 @@ describe(
             apparent_temperature:
               17,
 
+            // NEW STEP 7 VALUE:
+            // Current precipitation in millimetres.
+            precipitation:
+              0.2,
+
             weather_code:
               2,
 
             wind_speed_10m:
               14,
           },
+
+
+          // ---------------------------------------------------
+          // HOURLY FORECAST
+          // ---------------------------------------------------
+          //
+          // Open-Meteo returns parallel arrays.
+          //
+          // Example:
+          //
+          // index 1:
+          // time[1]                     = 18:00
+          // temperature_2m[1]           = 19
+          // relative_humidity_2m[1]     = 72
+          // precipitation_probability[1]= 20
+          // weather_code[1]             = 2
+          //
+          // normalizeWeatherData() combines these into one
+          // application-level hourly object.
+          // ---------------------------------------------------
 
           hourly: {
             time: [
@@ -106,6 +175,22 @@ describe(
               17,
             ],
 
+            // NEW STEP 7 ARRAY:
+            relative_humidity_2m: [
+              70,
+              72,
+              74,
+              75,
+            ],
+
+            // NEW STEP 7 ARRAY:
+            precipitation_probability: [
+              10,
+              20,
+              30,
+              40,
+            ],
+
             weather_code: [
               1,
               2,
@@ -113,6 +198,11 @@ describe(
               3,
             ],
           },
+
+
+          // ---------------------------------------------------
+          // DAILY FORECAST
+          // ---------------------------------------------------
 
           daily: {
             time: [
@@ -135,6 +225,12 @@ describe(
               14,
             ],
 
+            // NEW STEP 7 ARRAY:
+            precipitation_probability_max: [
+              45,
+              20,
+            ],
+
             sunrise: [
               "2026-08-31T06:25",
               "2026-09-01T06:27",
@@ -153,9 +249,9 @@ describe(
         };
 
 
-        // -----------------------------------------------------
-        // NORMALIZATION
-        // -----------------------------------------------------
+        // =====================================================
+        // 3. NORMALIZE THE PROVIDER DATA
+        // =====================================================
 
         const result =
           normalizeWeatherData(
@@ -164,9 +260,9 @@ describe(
           );
 
 
-        // -----------------------------------------------------
-        // LOCATION ASSERTIONS
-        // -----------------------------------------------------
+        // =====================================================
+        // 4. LOCATION ASSERTIONS
+        // =====================================================
 
         expect(
           result
@@ -176,10 +272,18 @@ describe(
           "Vancouver, British Columbia, Canada"
         );
 
+        expect(
+          result
+            .location
+            .timezone
+        ).toBe(
+          "America/Vancouver"
+        );
 
-        // -----------------------------------------------------
-        // CURRENT WEATHER ASSERTIONS
-        // -----------------------------------------------------
+
+        // =====================================================
+        // 5. CURRENT WEATHER ASSERTIONS
+        // =====================================================
 
         expect(
           result
@@ -237,12 +341,35 @@ describe(
 
 
         // -----------------------------------------------------
-        // HOURLY ASSERTIONS
-        //
-        // Current time is 18:30.
-        // Therefore hourly presentation should begin from the
-        // 18:00 forecast record, not 17:00.
+        // NEW STEP 7 ASSERTION:
+        // Current precipitation.
         // -----------------------------------------------------
+
+        expect(
+          result
+            .current
+            .precipitationMm
+        ).toBe(0.2);
+
+
+        // =====================================================
+        // 6. HOURLY FORECAST ASSERTIONS
+        // =====================================================
+        //
+        // Current time:
+        //
+        //     2026-08-31T18:30
+        //
+        // The normalization logic matches the current HOUR:
+        //
+        //     18
+        //
+        // so the first normalized hourly item corresponds to:
+        //
+        //     2026-08-31T18:00
+        //
+        // Therefore it uses SOURCE ARRAY INDEX 1.
+        // =====================================================
 
         expect(
           result.hourly
@@ -252,7 +379,9 @@ describe(
           result
             .hourly[0]
             .time
-        ).toBe("6 PM");
+        ).toBe(
+          "6 PM"
+        );
 
         expect(
           result
@@ -270,8 +399,40 @@ describe(
 
 
         // -----------------------------------------------------
-        // DAILY ASSERTIONS
+        // NEW STEP 7 ASSERTION:
+        // Hourly relative humidity.
+        //
+        // Source:
+        //
+        // relative_humidity_2m[1] = 72
         // -----------------------------------------------------
+
+        expect(
+          result
+            .hourly[0]
+            .humidity
+        ).toBe(72);
+
+
+        // -----------------------------------------------------
+        // NEW STEP 7 ASSERTION:
+        // Hourly precipitation probability.
+        //
+        // Source:
+        //
+        // precipitation_probability[1] = 20
+        // -----------------------------------------------------
+
+        expect(
+          result
+            .hourly[0]
+            .precipitationProbability
+        ).toBe(20);
+
+
+        // =====================================================
+        // 7. DAILY FORECAST ASSERTIONS
+        // =====================================================
 
         expect(
           result.daily
@@ -302,6 +463,22 @@ describe(
             .daily[0]
             .uvIndex
         ).toBe(4.5);
+
+
+        // -----------------------------------------------------
+        // NEW STEP 7 ASSERTION:
+        // Daily maximum precipitation probability.
+        //
+        // Source:
+        //
+        // precipitation_probability_max[0] = 45
+        // -----------------------------------------------------
+
+        expect(
+          result
+            .daily[0]
+            .precipitationProbability
+        ).toBe(45);
       }
     );
   }

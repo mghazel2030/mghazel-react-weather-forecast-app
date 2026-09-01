@@ -2,23 +2,12 @@
 // File name: HourlyForecast.jsx
 // ============================================================
 // Objective:
-// Display the next twelve normalized hourly forecast entries.
-//
-// Responsibilities:
-// 1. Receive normalized hourly weather objects from App.jsx.
-// 2. Render data using React .map().
-// 3. Display local forecast hour.
-// 4. Display WMO-derived weather symbol/condition.
-// 5. Display temperature using the shared C/F unit.
-//
-// Important:
-// The service layer already selects the next twelve hours.
-// This presentation component does not know Open-Meteo's
-// parallel-array response format.
+// Display the next 12 hours of weather including temperature,
+// humidity, precipitation probability, and condition.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 6.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -26,27 +15,13 @@ import {
 } from "../../utils/weatherUtils";
 
 
-/**
- * Hourly forecast presentation component.
- *
- * @param {Object} props
- * @param {Object[]} props.forecast
- * Array of normalized hourly weather objects.
- * @param {"C"|"F"} props.unit
- * Active temperature unit.
- *
- * @returns {JSX.Element}
- * Next-hours forecast section.
- */
 function HourlyForecast({
   forecast,
   unit,
 }) {
   return (
     <section
-      className="
-        forecast-section
-      "
+      className="forecast-section"
       aria-labelledby="
         hourly-forecast-heading
       "
@@ -106,33 +81,35 @@ function HourlyForecast({
                 aria-hidden="true"
               >
                 {
-                  hour
-                    .weatherSymbol
+                  hour.weatherSymbol
                 }
               </div>
 
-              <p
-                className="
-                  hourly-condition
-                "
-              >
-                {
-                  hour
-                    .condition
-                }
-              </p>
-
-              <strong
-                className="
-                  hourly-temperature
-                "
-              >
+              <strong>
                 {formatTemperature(
                   hour
                     .temperatureCelsius,
                   unit
                 )}
               </strong>
+
+              <div
+                className="
+                  hourly-mini-metrics
+                "
+              >
+                <span>
+                  💧 {hour.humidity}%
+                </span>
+
+                <span>
+                  ☔{" "}
+                  {
+                    hour
+                      .precipitationProbability
+                  }%
+                </span>
+              </div>
             </article>
           )
         )}

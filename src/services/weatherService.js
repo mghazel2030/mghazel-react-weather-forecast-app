@@ -2,42 +2,21 @@
 // File name: weatherService.js
 // ============================================================
 // Objective:
-// Provide the application's dedicated Open-Meteo integration
-// layer.
+// Centralize all Open-Meteo API interaction and transform
+// provider-specific responses into the application's stable
+// weather domain model.
 //
-// High-Level Processing Pipeline:
-//
-// User location string
-//        ↓
-// geocodeLocation()
-//        ↓
-// Open-Meteo Geocoding API
-//        ↓
-// latitude + longitude
-//        ↓
-// requestWeather()
-//        ↓
-// Open-Meteo Forecast API
-//        ↓
-// raw Open-Meteo JSON
-//        ↓
-// normalizeWeatherData()
-//        ↓
-// stable application weather model
-//
-// Design Objectives:
-// - Keep API-specific logic outside React components.
-// - Translate provider errors into application-level errors.
-// - Normalize Open-Meteo's parallel time-series arrays.
-// - Keep components independent of Open-Meteo field names.
-//
-// Open-Meteo:
-// The public non-commercial API used by this project does not
-// require an API key.
+// STEP 7 Additions:
+// - Weather lookup directly by geographic coordinates.
+// - Current precipitation.
+// - Hourly humidity.
+// - Hourly precipitation probability.
+// - Daily precipitation probability.
+// - Geolocation-ready weather pipeline.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 1.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -46,33 +25,24 @@ import {
   formatIsoTime,
   getWeatherDescription,
   getWeatherSymbol,
+  normalizePercentage,
 } from "../utils/weatherUtils";
 
 
-/**
- * Open-Meteo Geocoding API endpoint.
- */
 const GEOCODING_URL =
   "https://geocoding-api.open-meteo.com/v1/search";
 
-
-/**
- * Open-Meteo Forecast API endpoint.
- */
 const FORECAST_URL =
   "https://api.open-meteo.com/v1/forecast";
 
 
 /**
- * Application-specific error used to distinguish expected
- * weather-service failures from unexpected JavaScript errors.
+ * Error type representing an expected weather-service failure.
  */
 export class WeatherServiceError extends Error {
   /**
-   * Creates a weather-service error.
-   *
-   * @param {string} message - User-readable error message.
-   * @param {string} code - Programmatic error identifier.
+   * @param {string} message User-readable description.
+   * @param {string} code Application error identifier.
    */
   constructor(
     message,
@@ -80,40 +50,20 @@ export class WeatherServiceError extends Error {
   ) {
     super(message);
 
-    this.name = "WeatherServiceError";
-    this.code = code;
+    this.name =
+      "WeatherServiceError";
+
+    this.code =
+      code;
   }
 }
 
 
 /**
- * Resolves a user-entered location into geographic coordinates.
+ * Resolves a location name into geographic coordinates.
  *
- * The first matching Open-Meteo geocoding result is currently
- * used. Location disambiguation can be introduced later.
- *
- * Example:
- *
- *     "Vancouver"
- *
- *       ↓
- *
- *     {
- *       name,
- *       state,
- *       country,
- *       latitude,
- *       longitude,
- *       timezone
- *     }
- *
- * @param {string} locationQuery - City/location search string.
- *
- * @returns {Promise<Object>}
- * Normalized geographic location.
- *
- * @throws {WeatherServiceError}
- * When the geocoding request fails or returns no location.
+ * @param {string} locationQuery City/location.
+ * @returns {Promise<Object>} Normalized location.
  */
 async function geocodeLocation(locationQuery) {
   const parameters =
@@ -124,11 +74,10 @@ async function geocodeLocation(locationQuery) {
       format: "json",
     });
 
-  const requestUrl =
-    `${GEOCODING_URL}?${parameters.toString()}`;
-
   const response =
-    await fetch(requestUrl);
+    await fetch(
+      `${GEOCODING_URL}?${parameters.toString()}`
+    );
 
   if (!response.ok) {
     throw new WeatherServiceError(
@@ -179,39 +128,11 @@ async function geocodeLocation(locationQuery) {
 
 
 /**
- * Retrieves live weather information from Open-Meteo using
- * geographic coordinates.
+ * Requests Open-Meteo weather data for coordinates.
  *
- * Requested current variables:
- * - temperature_2m
- * - relative_humidity_2m
- * - apparent_temperature
- * - weather_code
- * - wind_speed_10m
- *
- * Requested hourly variables:
- * - temperature_2m
- * - weather_code
- *
- * Requested daily variables:
- * - weather_code
- * - temperature_2m_max
- * - temperature_2m_min
- * - sunrise
- * - sunset
- * - uv_index_max
- *
- * All temperatures are requested in Celsius and wind speed in
- * km/h. The application can later convert Celsius into
- * Fahrenheit without issuing another network request.
- *
- * @param {number} latitude - WGS84 latitude.
- * @param {number} longitude - WGS84 longitude.
- *
- * @returns {Promise<Object>} Raw Open-Meteo forecast JSON.
- *
- * @throws {WeatherServiceError}
- * When Open-Meteo responds with an unsuccessful HTTP status.
+ * @param {number} latitude Latitude.
+ * @param {number} longitude Longitude.
+ * @returns {Promise<Object>} Raw API response.
  */
 async function requestWeather(
   latitude,
@@ -229,12 +150,15 @@ async function requestWeather(
         "temperature_2m",
         "relative_humidity_2m",
         "apparent_temperature",
+        "precipitation",
         "weather_code",
         "wind_speed_10m",
       ].join(","),
 
       hourly: [
         "temperature_2m",
+        "relative_humidity_2m",
+        "precipitation_probability",
         "weather_code",
       ].join(","),
 
@@ -242,6 +166,7 @@ async function requestWeather(
         "weather_code",
         "temperature_2m_max",
         "temperature_2m_min",
+        "precipitation_probability_max",
         "sunrise",
         "sunset",
         "uv_index_max",
@@ -253,6 +178,9 @@ async function requestWeather(
       wind_speed_unit:
         "kmh",
 
+      precipitation_unit:
+        "mm",
+
       timezone:
         "auto",
 
@@ -260,11 +188,10 @@ async function requestWeather(
         "7",
     });
 
-  const requestUrl =
-    `${FORECAST_URL}?${parameters.toString()}`;
-
   const response =
-    await fetch(requestUrl);
+    await fetch(
+      `${FORECAST_URL}?${parameters.toString()}`
+    );
 
   if (!response.ok) {
     throw new WeatherServiceError(
@@ -278,27 +205,12 @@ async function requestWeather(
 
 
 /**
- * Locates the hourly forecast entry corresponding most closely
- * to Open-Meteo's current local hour.
+ * Finds the current location-local hour within Open-Meteo's
+ * hourly data arrays.
  *
- * Open-Meteo hourly data begins at midnight. Simply taking
- * hourly.slice(0, 12) would therefore display the first twelve
- * hours of the day instead of the next twelve hours.
- *
- * This function compares:
- *
- *     current.time = YYYY-MM-DDTHH:mm
- *
- * with:
- *
- *     hourly.time[]
- *
- * at YYYY-MM-DDTHH precision.
- *
- * @param {string[]} hourlyTimes - Hourly ISO timestamps.
- * @param {string} currentTime - Current Open-Meteo local time.
- *
- * @returns {number} Starting hourly-array index.
+ * @param {string[]} hourlyTimes Hourly timestamps.
+ * @param {string} currentTime Current local API timestamp.
+ * @returns {number} Start index.
  */
 function findCurrentHourlyIndex(
   hourlyTimes,
@@ -312,14 +224,14 @@ function findCurrentHourlyIndex(
     return 0;
   }
 
-  const currentHourPrefix =
+  const currentHour =
     currentTime.slice(0, 13);
 
   const matchingIndex =
     hourlyTimes.findIndex(
       (time) =>
         time.slice(0, 13) ===
-        currentHourPrefix
+        currentHour
     );
 
   return matchingIndex >= 0
@@ -329,32 +241,11 @@ function findCurrentHourlyIndex(
 
 
 /**
- * Converts Open-Meteo-specific response data into the stable
- * data model consumed by the React application.
+ * Normalizes raw Open-Meteo data into application objects.
  *
- * Open-Meteo often represents time-series information as
- * parallel arrays:
- *
- *     hourly.time[index]
- *     hourly.temperature_2m[index]
- *     hourly.weather_code[index]
- *
- * The application converts those arrays into objects:
- *
- *     {
- *       time,
- *       temperatureCelsius,
- *       condition,
- *       weatherSymbol
- *     }
- *
- * This keeps index-based provider logic out of UI components.
- *
- * @param {Object} location - Normalized geocoding result.
- * @param {Object} apiData - Raw Open-Meteo forecast response.
- *
- * @returns {Object}
- * Stable application weather-data model.
+ * @param {Object} location Location metadata.
+ * @param {Object} apiData Open-Meteo response.
+ * @returns {Object} Application weather model.
  */
 export function normalizeWeatherData(
   location,
@@ -370,10 +261,6 @@ export function normalizeWeatherData(
     apiData.daily ?? {};
 
 
-  // ----------------------------------------------------------
-  // LOCATION
-  // ----------------------------------------------------------
-
   const locationParts = [
     location.name,
     location.state,
@@ -384,26 +271,13 @@ export function normalizeWeatherData(
     locationParts.join(", ");
 
 
-  // ----------------------------------------------------------
-  // CURRENT WEATHER
-  // ----------------------------------------------------------
-
   const currentWeatherCode =
     current.weather_code ?? -1;
 
-  const todayUvIndex =
-    daily.uv_index_max?.[0] ?? 0;
 
-  const todaySunrise =
-    daily.sunrise?.[0] ?? "";
-
-  const todaySunset =
-    daily.sunset?.[0] ?? "";
-
-
-  // ----------------------------------------------------------
-  // HOURLY WEATHER
-  // ----------------------------------------------------------
+  // =========================================================
+  // HOURLY FORECAST
+  // =========================================================
 
   const hourlyTimes =
     hourly.time ?? [];
@@ -411,29 +285,32 @@ export function normalizeWeatherData(
   const hourlyTemperatures =
     hourly.temperature_2m ?? [];
 
+  const hourlyHumidity =
+    hourly.relative_humidity_2m ?? [];
+
+  const hourlyRainProbability =
+    hourly.precipitation_probability ?? [];
+
   const hourlyWeatherCodes =
     hourly.weather_code ?? [];
 
-  const hourlyStartIndex =
+  const startIndex =
     findCurrentHourlyIndex(
       hourlyTimes,
       current.time
     );
 
-  const hourlyEndIndex =
-    hourlyStartIndex + 12;
-
-  const nextTwelveTimes =
+  const nextHourlyTimes =
     hourlyTimes.slice(
-      hourlyStartIndex,
-      hourlyEndIndex
+      startIndex,
+      startIndex + 12
     );
 
   const normalizedHourly =
-    nextTwelveTimes.map(
+    nextHourlyTimes.map(
       (time, relativeIndex) => {
         const sourceIndex =
-          hourlyStartIndex +
+          startIndex +
           relativeIndex;
 
         const weatherCode =
@@ -453,6 +330,20 @@ export function normalizeWeatherData(
               sourceIndex
             ] ?? 0,
 
+          humidity:
+            normalizePercentage(
+              hourlyHumidity[
+                sourceIndex
+              ]
+            ),
+
+          precipitationProbability:
+            normalizePercentage(
+              hourlyRainProbability[
+                sourceIndex
+              ]
+            ),
+
           weatherCode,
 
           condition:
@@ -469,9 +360,9 @@ export function normalizeWeatherData(
     );
 
 
-  // ----------------------------------------------------------
-  // DAILY WEATHER
-  // ----------------------------------------------------------
+  // =========================================================
+  // DAILY FORECAST
+  // =========================================================
 
   const dailyTimes =
     daily.time ?? [];
@@ -485,13 +376,16 @@ export function normalizeWeatherData(
   const dailyWeatherCodes =
     daily.weather_code ?? [];
 
+  const dailyRainProbability =
+    daily.precipitation_probability_max ?? [];
+
   const dailySunrises =
     daily.sunrise ?? [];
 
   const dailySunsets =
     daily.sunset ?? [];
 
-  const dailyUvIndices =
+  const dailyUv =
     daily.uv_index_max ?? [];
 
   const normalizedDaily =
@@ -525,12 +419,19 @@ export function normalizeWeatherData(
                 index
               ] ?? 0,
 
-            weatherCode,
+            precipitationProbability:
+              normalizePercentage(
+                dailyRainProbability[
+                  index
+                ]
+              ),
 
             condition:
               getWeatherDescription(
                 weatherCode
               ),
+
+            weatherCode,
 
             weatherSymbol:
               getWeatherSymbol(
@@ -552,7 +453,7 @@ export function normalizeWeatherData(
               ),
 
             uvIndex:
-              dailyUvIndices[
+              dailyUv[
                 index
               ] ?? 0,
           };
@@ -560,13 +461,15 @@ export function normalizeWeatherData(
       );
 
 
-  // ----------------------------------------------------------
-  // FINAL APPLICATION MODEL
-  // ----------------------------------------------------------
-
   return {
     location: {
       ...location,
+
+      timezone:
+        apiData.timezone ??
+        location.timezone ??
+        "",
+
       displayName,
     },
 
@@ -578,10 +481,15 @@ export function normalizeWeatherData(
         current.apparent_temperature ?? 0,
 
       humidity:
-        current.relative_humidity_2m ?? 0,
+        normalizePercentage(
+          current.relative_humidity_2m
+        ),
 
       windSpeedKmh:
         current.wind_speed_10m ?? 0,
+
+      precipitationMm:
+        current.precipitation ?? 0,
 
       weatherCode:
         currentWeatherCode,
@@ -597,16 +505,16 @@ export function normalizeWeatherData(
         ),
 
       uvIndex:
-        todayUvIndex,
+        dailyUv[0] ?? 0,
 
       sunrise:
         formatIsoTime(
-          todaySunrise
+          dailySunrises[0]
         ),
 
       sunset:
         formatIsoTime(
-          todaySunset
+          dailySunsets[0]
         ),
     },
 
@@ -620,31 +528,10 @@ export function normalizeWeatherData(
 
 
 /**
- * Public service function used by the React application.
+ * Retrieves weather by city/location string.
  *
- * Orchestrates:
- *
- *     location string
- *          ↓
- *     geocoding
- *          ↓
- *     coordinates
- *          ↓
- *     weather request
- *          ↓
- *     normalization
- *
- * Unexpected network failures are converted into a
- * WeatherServiceError so App.jsx receives a predictable error
- * type and user-friendly message.
- *
- * @param {string} locationQuery - User-entered city/location.
- *
- * @returns {Promise<Object>}
- * Fully normalized application weather data.
- *
- * @throws {WeatherServiceError}
- * For geocoding, forecast, or network failures.
+ * @param {string} locationQuery Location search.
+ * @returns {Promise<Object>} Normalized weather.
  */
 export async function getWeatherByCity(
   locationQuery
@@ -676,6 +563,70 @@ export async function getWeatherByCity(
     throw new WeatherServiceError(
       "Unable to connect to the weather service. Please check your connection and try again.",
       "NETWORK_ERROR"
+    );
+  }
+}
+
+
+/**
+ * Retrieves weather directly from geographic coordinates.
+ *
+ * This is used by browser geolocation and avoids an
+ * unnecessary forward-geocoding operation.
+ *
+ * @param {number} latitude Latitude.
+ * @param {number} longitude Longitude.
+ * @param {string} label Location label.
+ * @returns {Promise<Object>} Normalized weather.
+ */
+export async function getWeatherByCoordinates(
+  latitude,
+  longitude,
+  label = "Current Location"
+) {
+  try {
+    const apiData =
+      await requestWeather(
+        latitude,
+        longitude
+      );
+
+    const location = {
+      name:
+        label,
+
+      state:
+        "",
+
+      country:
+        "",
+
+      countryCode:
+        "",
+
+      latitude,
+
+      longitude,
+
+      timezone:
+        apiData.timezone ?? "",
+    };
+
+    return normalizeWeatherData(
+      location,
+      apiData
+    );
+  } catch (error) {
+    if (
+      error instanceof
+      WeatherServiceError
+    ) {
+      throw error;
+    }
+
+    throw new WeatherServiceError(
+      "Unable to retrieve weather for your current location.",
+      "LOCATION_WEATHER_ERROR"
     );
   }
 }
