@@ -2,21 +2,24 @@
 // File name: WeatherCard.jsx
 // ============================================================
 // Objective:
-// Present the current live weather conditions.
+// Present current live weather information.
+//
+// FINAL-TOUCHES:
+// Current-weather styling is now scoped through a CSS Module.
 //
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
 
 import {
   formatTemperature,
 } from "../../utils/weatherUtils";
 
+import styles from
+  "./WeatherCard.module.css";
 
-/**
- * Current weather card.
- */
+
 function WeatherCard({
   city,
   weather,
@@ -25,20 +28,22 @@ function WeatherCard({
 }) {
   return (
     <section
-      className="
-        current-weather-card
-      "
+      className={
+        styles.card
+      }
       aria-labelledby="
         current-weather-heading
       "
     >
       <div
-        className="
-          current-weather-primary
-        "
+        className={
+          styles.primary
+        }
       >
         <div
-          className="weather-symbol"
+          className={
+            styles.symbol
+          }
           aria-hidden="true"
         >
           {weather.weatherSymbol}
@@ -46,9 +51,9 @@ function WeatherCard({
 
         <div>
           <p
-            className="
-              current-weather-label
-            "
+            className={
+              styles.label
+            }
           >
             Current Weather
           </p>
@@ -62,17 +67,17 @@ function WeatherCard({
           </h2>
 
           <p
-            className="
-              weather-condition
-            "
+            className={
+              styles.condition
+            }
           >
             {weather.condition}
           </p>
 
           <p
-            className="
-              current-temperature
-            "
+            className={
+              styles.temperature
+            }
           >
             {formatTemperature(
               weather
@@ -82,7 +87,9 @@ function WeatherCard({
           </p>
 
           <p
-            className="feels-like"
+            className={
+              styles.feelsLike
+            }
           >
             Feels like{" "}
             {formatTemperature(
@@ -95,39 +102,69 @@ function WeatherCard({
       </div>
 
       <div
-        className="
-          current-weather-details
-        "
+        className={
+          styles.details
+        }
       >
-        <div className="weather-metric">
-          <span>Humidity</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            Humidity
+          </span>
+
           <strong>
             {weather.humidity}%
           </strong>
         </div>
 
-        <div className="weather-metric">
-          <span>Wind</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            Wind
+          </span>
+
           <strong>
             {Math.round(
-              weather.windSpeedKmh
+              weather
+                .windSpeedKmh
             )}{" "}
             km/h
           </strong>
         </div>
 
-        <div className="weather-metric">
-          <span>Precipitation</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            Precipitation
+          </span>
+
           <strong>
             {Number(
-              weather.precipitationMm
+              weather
+                .precipitationMm
             ).toFixed(1)}{" "}
             mm
           </strong>
         </div>
 
-        <div className="weather-metric">
-          <span>UV Max Today</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            UV Max Today
+          </span>
+
           <strong>
             {Number(
               weather.uvIndex
@@ -135,27 +172,46 @@ function WeatherCard({
           </strong>
         </div>
 
-        <div className="weather-metric">
-          <span>Sunrise</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            Sunrise
+          </span>
+
           <strong>
             {weather.sunrise}
           </strong>
         </div>
 
-        <div className="weather-metric">
-          <span>Sunset</span>
+        <div
+          className={
+            styles.metric
+          }
+        >
+          <span>
+            Sunset
+          </span>
+
           <strong>
             {weather.sunset}
           </strong>
         </div>
 
         <button
-          className="
-            unit-toggle-button
-          "
+          className={
+            styles.unitButton
+          }
           type="button"
           onClick={
             onToggleUnit
+          }
+          aria-label={
+            unit === "C"
+              ? "Display temperatures in Fahrenheit"
+              : "Display temperatures in Celsius"
           }
         >
           Display{" "}

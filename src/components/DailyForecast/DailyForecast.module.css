@@ -1,0 +1,206 @@
+/* ============================================================
+   DailyForecast.module.css
+
+   Author: mghazel
+   Date: 01-Sep-2026
+   Version: 1.0
+   ============================================================ */
+
+.section {
+  margin-bottom:
+    1.35rem;
+
+  padding:
+    1.25rem;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    15px;
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text-primary);
+
+  box-shadow:
+    var(--shadow);
+}
+
+
+.header {
+  margin-bottom:
+    0.9rem;
+}
+
+
+.header h2 {
+  margin:
+    0;
+
+  font-size:
+    1.25rem;
+}
+
+
+.eyebrow {
+  margin:
+    0
+    0
+    0.2rem;
+
+  color:
+    var(--text-secondary);
+
+  font-size:
+    0.72rem;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    0.07em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.list {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    0.55rem;
+}
+
+
+.row {
+  display:
+    grid;
+
+  grid-template-columns:
+    minmax(
+      130px,
+      1fr
+    )
+    minmax(
+      190px,
+      1.5fr
+    )
+    auto
+    auto;
+
+  gap:
+    0.8rem;
+
+  align-items:
+    center;
+
+  padding:
+    0.85rem
+    1rem;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    10px;
+
+  background:
+    var(--surface-secondary);
+}
+
+
+.condition {
+  display:
+    flex;
+
+  gap:
+    0.65rem;
+
+  align-items:
+    center;
+
+  color:
+    var(--text-secondary);
+}
+
+
+.symbol {
+  font-size:
+    1.8rem;
+}
+
+
+.rain {
+  color:
+    var(--text-secondary);
+
+  font-size:
+    0.84rem;
+}
+
+
+.temperatures {
+  display:
+    flex;
+
+  gap:
+    0.7rem;
+
+  align-items:
+    center;
+
+  justify-content:
+    flex-end;
+}
+
+
+.temperatures strong {
+  color:
+    var(--navy);
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .row {
+    grid-template-columns:
+      1fr
+      auto;
+
+    grid-template-areas:
+      "date temperatures"
+      "condition condition"
+      "rain rain";
+  }
+
+  .date {
+    grid-area:
+      date;
+  }
+
+  .condition {
+    grid-area:
+      condition;
+  }
+
+  .rain {
+    grid-area:
+      rain;
+  }
+
+  .temperatures {
+    grid-area:
+      temperatures;
+  }
+}
