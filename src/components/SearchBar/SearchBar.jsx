@@ -5,21 +5,26 @@
 // Provide city search, browser geolocation, and clear/reset
 // controls.
 //
+// FINAL-TOUCHES:
+// - Component-scoped CSS Module.
+// - Improved button accessibility.
+// - Refined responsive behavior.
+//
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
 
 import {
   useState,
 } from "react";
 
+import styles from
+  "./SearchBar.module.css";
+
 
 /**
- * Final weather search controls.
- *
- * @param {Object} props Properties.
- * @returns {JSX.Element} Search interface.
+ * Weather search control panel.
  */
 function SearchBar({
   city,
@@ -89,11 +94,15 @@ function SearchBar({
 
   return (
     <section
-      className="search-panel"
-      aria-label="Weather search"
+      className={
+        styles.panel
+      }
+      aria-label="Weather search controls"
     >
       <form
-        className="search-form"
+        className={
+          styles.form
+        }
         onSubmit={
           handleSubmit
         }
@@ -109,7 +118,7 @@ function SearchBar({
         <input
           id="city-search"
           name="city"
-          type="text"
+          type="search"
           value={cityInput}
           onChange={
             handleInputChange
@@ -119,6 +128,11 @@ function SearchBar({
           }
           autoComplete="off"
           disabled={isLoading}
+          aria-invalid={
+            Boolean(
+              errorMessage
+            )
+          }
           aria-describedby={
             errorMessage
               ? "city-search-error"
@@ -127,10 +141,9 @@ function SearchBar({
         />
 
         <button
-          className="
-            button
-            button-primary
-          "
+          className={
+            `${styles.button} ${styles.primary}`
+          }
           type="submit"
           disabled={isLoading}
         >
@@ -140,24 +153,27 @@ function SearchBar({
         </button>
 
         <button
-          className="
-            button
-            button-location
-          "
+          className={
+            `${styles.button} ${styles.location}`
+          }
           type="button"
           onClick={
             onUseMyLocation
           }
           disabled={isLoading}
         >
-          📍 Use My Location
+          <span
+            aria-hidden="true"
+          >
+            📍
+          </span>{" "}
+          Use My Location
         </button>
 
         <button
-          className="
-            button
-            button-secondary
-          "
+          className={
+            `${styles.button} ${styles.secondary}`
+          }
           type="button"
           onClick={
             handleClear
@@ -171,9 +187,9 @@ function SearchBar({
       {errorMessage && (
         <p
           id="city-search-error"
-          className="
-            form-error-message
-          "
+          className={
+            styles.error
+          }
           role="alert"
         >
           {errorMessage}

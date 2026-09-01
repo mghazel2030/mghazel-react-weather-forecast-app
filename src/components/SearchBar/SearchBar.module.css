@@ -1,0 +1,229 @@
+/* ============================================================
+   SearchBar.module.css
+
+   Scoped search-control styling.
+
+   Author: mghazel
+   Date: 01-Sep-2026
+   Version: 1.0
+   ============================================================ */
+
+.panel {
+  margin:
+    1rem
+    0
+    1.4rem;
+
+  padding:
+    1rem;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    15px;
+
+  background:
+    var(--surface);
+
+  box-shadow:
+    var(--shadow);
+}
+
+
+.form {
+  display:
+    grid;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1fr
+    )
+    auto
+    auto
+    auto;
+
+  gap:
+    0.7rem;
+}
+
+
+.form input {
+  width:
+    100%;
+
+  min-width:
+    0;
+
+  min-height:
+    46px;
+
+  padding:
+    0.7rem
+    0.9rem;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    9px;
+
+  background:
+    var(--surface-secondary);
+
+  color:
+    var(--text-primary);
+
+  transition:
+    border-color
+    0.2s ease,
+    box-shadow
+    0.2s ease;
+}
+
+
+.form input:focus {
+  border-color:
+    var(--navy);
+
+  outline:
+    none;
+
+  box-shadow:
+    0
+    0
+    0
+    3px
+    var(--focus-ring);
+}
+
+
+.button {
+  min-height:
+    46px;
+
+  padding:
+    0.65rem
+    1.05rem;
+
+  border:
+    0;
+
+  border-radius:
+    999px;
+
+  cursor:
+    pointer;
+
+  white-space:
+    nowrap;
+
+  font-weight:
+    800;
+
+  transition:
+    transform
+    0.15s ease,
+    opacity
+    0.15s ease;
+}
+
+
+.button:hover:not(
+  :disabled
+) {
+  transform:
+    translateY(-1px);
+}
+
+
+.primary {
+  background:
+    var(--navy);
+
+  color:
+    #ffffff;
+}
+
+
+.location {
+  background:
+    var(--location-green);
+
+  color:
+    #ffffff;
+}
+
+
+.secondary {
+  background:
+    #dfe3e8;
+
+  color:
+    #303845;
+}
+
+
+.button:disabled,
+.form input:disabled {
+  cursor:
+    not-allowed;
+
+  opacity:
+    0.58;
+}
+
+
+.error {
+  margin:
+    0.7rem
+    0
+    0;
+
+  color:
+    var(--error-text);
+
+  font-weight:
+    700;
+}
+
+
+@media (
+  max-width: 850px
+) {
+  .form {
+    grid-template-columns:
+      repeat(
+        3,
+        1fr
+      );
+  }
+
+  .form input {
+    grid-column:
+      1 / -1;
+  }
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .form {
+    grid-template-columns:
+      1fr;
+  }
+
+  .form input {
+    grid-column:
+      auto;
+  }
+
+  .button {
+    width:
+      100%;
+  }
+}

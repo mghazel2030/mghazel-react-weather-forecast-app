@@ -2,14 +2,16 @@
 // File name: TemperatureChart.jsx
 // ============================================================
 // Objective:
-// Visualize seven-day forecast high/low temperature trends.
+// Display the seven-day high/low temperature trend.
 //
-// Technology:
-// Chart.js + react-chartjs-2
+// FINAL-TOUCHES:
+// - Scoped CSS Module.
+// - Accessibility description added.
+// - Responsive container retained.
 //
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 1.0
+// Version: 8.0
 // ============================================================
 
 import {
@@ -31,6 +33,9 @@ import {
   celsiusToFahrenheit,
 } from "../../utils/weatherUtils";
 
+import styles from
+  "./TemperatureChart.module.css";
+
 
 ChartJS.register(
   CategoryScale,
@@ -43,9 +48,6 @@ ChartJS.register(
 );
 
 
-/**
- * Seven-day temperature trend chart.
- */
 function TemperatureChart({
   forecast,
   unit,
@@ -63,6 +65,26 @@ function TemperatureChart({
     forecast.map(
       (day) =>
         day.day
+    );
+
+  const highValues =
+    forecast.map(
+      (day) =>
+        Math.round(
+          convertTemperature(
+            day.highCelsius
+          )
+        )
+    );
+
+  const lowValues =
+    forecast.map(
+      (day) =>
+        Math.round(
+          convertTemperature(
+            day.lowCelsius
+          )
+        )
     );
 
   const textColor =
@@ -84,14 +106,7 @@ function TemperatureChart({
           `Daily High (°${unit})`,
 
         data:
-          forecast.map(
-            (day) =>
-              Math.round(
-                convertTemperature(
-                  day.highCelsius
-                )
-              )
-          ),
+          highValues,
 
         borderColor:
           "#3b82f6",
@@ -111,14 +126,7 @@ function TemperatureChart({
           `Daily Low (°${unit})`,
 
         data:
-          forecast.map(
-            (day) =>
-              Math.round(
-                convertTemperature(
-                  day.lowCelsius
-                )
-              )
-          ),
+          lowValues,
 
         borderColor:
           "#7c3aed",
@@ -157,11 +165,6 @@ function TemperatureChart({
             textColor,
         },
       },
-
-      title: {
-        display:
-          false,
-      },
     },
 
     scales: {
@@ -197,43 +200,49 @@ function TemperatureChart({
 
   return (
     <section
-      className="
-        forecast-section
-        temperature-chart-section
-      "
+      className={
+        styles.section
+      }
       aria-labelledby="
         temperature-chart-heading
       "
     >
-      <div
-        className="
-          forecast-section-header
-        "
+      <header
+        className={
+          styles.header
+        }
       >
-        <div>
-          <p
-            className="
-              section-eyebrow
-            "
-          >
-            Forecast Visualization
-          </p>
+        <p
+          className={
+            styles.eyebrow
+          }
+        >
+          Forecast Visualization
+        </p>
 
-          <h2
-            id="
-              temperature-chart-heading
-            "
-          >
-            Weekly Temperature
-            Trend
-          </h2>
-        </div>
-      </div>
+        <h2
+          id="
+            temperature-chart-heading
+          "
+        >
+          Weekly Temperature
+          Trend
+        </h2>
+      </header>
+
+      <p
+        className="sr-only"
+      >
+        Seven-day temperature
+        trend showing daily high
+        and low temperatures in
+        degrees {unit}.
+      </p>
 
       <div
-        className="
-          temperature-chart-container
-        "
+        className={
+          styles.container
+        }
       >
         <Line
           data={chartData}

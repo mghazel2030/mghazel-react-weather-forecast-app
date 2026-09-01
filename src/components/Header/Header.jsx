@@ -2,33 +2,52 @@
 // File name: Header.jsx
 // ============================================================
 // Objective:
-// Display application identity, instructions, and theme
-// control.
+// Display application title, instructions, and light/dark
+// presentation control.
+//
+// FINAL-TOUCHES:
+// Styling is now component-scoped through Header.module.css.
 //
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
+
+import styles from
+  "./Header.module.css";
 
 
 /**
  * Application header.
  *
- * @param {Object} props Component properties.
- * @param {"light"|"dark"} props.theme Active theme.
- * @param {Function} props.onToggleTheme Theme callback.
- * @returns {JSX.Element} Header.
+ * @param {Object} props
+ * @param {"light"|"dark"} props.theme
+ * Current application theme.
+ * @param {Function} props.onToggleTheme
+ * Theme-toggle callback.
+ *
+ * @returns {JSX.Element}
+ * Accessible application header.
  */
 function Header({
   theme,
   onToggleTheme,
 }) {
+  const targetTheme =
+    theme === "light"
+      ? "dark"
+      : "light";
+
   return (
-    <header className="app-header">
+    <header
+      className={
+        styles.header
+      }
+    >
       <div
-        className="
-          app-header-inner
-        "
+        className={
+          styles.inner
+        }
       >
         <div>
           <h1>
@@ -46,19 +65,18 @@ function Header({
         </div>
 
         <button
-          className="
-            theme-toggle-button
-          "
+          className={
+            styles.themeButton
+          }
           type="button"
           onClick={
             onToggleTheme
           }
           aria-label={
-            `Switch to ${
-              theme === "light"
-                ? "dark"
-                : "light"
-            } mode`
+            `Switch to ${targetTheme} mode`
+          }
+          title={
+            `Switch to ${targetTheme} mode`
           }
         >
           {theme === "light"

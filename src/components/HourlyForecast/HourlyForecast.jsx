@@ -2,17 +2,24 @@
 // File name: HourlyForecast.jsx
 // ============================================================
 // Objective:
-// Display the next 12 hours of weather including temperature,
-// humidity, precipitation probability, and condition.
+// Display the next 12 hours of live forecast data.
+//
+// FINAL-TOUCHES:
+// - Scoped CSS Module.
+// - Responsive horizontal scrolling.
+// - Improved semantic labeling.
 //
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
 
 import {
   formatTemperature,
 } from "../../utils/weatherUtils";
+
+import styles from
+  "./HourlyForecast.module.css";
 
 
 function HourlyForecast({
@@ -21,67 +28,74 @@ function HourlyForecast({
 }) {
   return (
     <section
-      className="forecast-section"
+      className={
+        styles.section
+      }
       aria-labelledby="
         hourly-forecast-heading
       "
     >
-      <div
-        className="
-          forecast-section-header
-        "
+      <header
+        className={
+          styles.header
+        }
       >
-        <div>
-          <p
-            className="
-              section-eyebrow
-            "
-          >
-            Hourly Outlook
-          </p>
+        <p
+          className={
+            styles.eyebrow
+          }
+        >
+          Hourly Outlook
+        </p>
 
-          <h2
-            id="
-              hourly-forecast-heading
-            "
-          >
-            Next 12 Hours
-          </h2>
-        </div>
-      </div>
+        <h2
+          id="
+            hourly-forecast-heading
+          "
+        >
+          Next 12 Hours
+        </h2>
+      </header>
 
       <div
-        className="
-          hourly-forecast-list
+        className={
+          styles.list
+        }
+        role="list"
+        aria-label="
+          Twelve-hour weather
+          forecast
         "
       >
         {forecast.map(
           (hour) => (
             <article
-              className="
-                hourly-forecast-card
-              "
+              className={
+                styles.card
+              }
               key={hour.id}
+              role="listitem"
               title={
                 hour.condition
               }
             >
               <p
-                className="
-                  hourly-time
-                "
+                className={
+                  styles.time
+                }
               >
                 {hour.time}
               </p>
 
               <div
-                className="
-                  forecast-symbol
-                "
+                className={
+                  styles.symbol
+                }
                 aria-hidden="true"
               >
                 {
-                  hour.weatherSymbol
+                  hour
+                    .weatherSymbol
                 }
               </div>
 
@@ -94,12 +108,13 @@ function HourlyForecast({
               </strong>
 
               <div
-                className="
-                  hourly-mini-metrics
-                "
+                className={
+                  styles.metrics
+                }
               >
                 <span>
-                  💧 {hour.humidity}%
+                  💧{" "}
+                  {hour.humidity}%
                 </span>
 
                 <span>
@@ -110,6 +125,12 @@ function HourlyForecast({
                   }%
                 </span>
               </div>
+
+              <span
+                className="sr-only"
+              >
+                {hour.condition}
+              </span>
             </article>
           )
         )}
