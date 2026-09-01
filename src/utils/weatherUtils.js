@@ -2,41 +2,24 @@
 // File name: weatherUtils.js
 // ============================================================
 // Objective:
-// Provide pure, reusable utility functions for weather-data
-// formatting and presentation.
+// Provide pure reusable utilities for weather formatting,
+// WMO interpretation, temperature conversion, and chart data.
 //
-// STEP 6 Responsibilities:
-// 1. Convert Celsius to Fahrenheit.
-// 2. Format temperatures for display.
-// 3. Translate Open-Meteo WMO weather codes into readable
-//    weather descriptions.
-// 4. Map weather codes to simple weather symbols.
-// 5. Format Open-Meteo local ISO time strings.
-// 6. Format Open-Meteo date strings.
-//
-// Design Principle:
-// These functions do not:
-// - access React state,
-// - access the DOM,
-// - perform network requests,
-// - mutate external data.
-//
-// Their deterministic behavior makes them easy to unit test.
+// Design:
+// This module performs no React rendering and no network I/O.
+// Pure deterministic functions are intentionally isolated here
+// because they are straightforward to unit test.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 1.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 
 /**
- * Converts a Celsius temperature into Fahrenheit.
+ * Converts Celsius into Fahrenheit.
  *
- * Formula:
- *
- *     F = (C × 9 / 5) + 32
- *
- * @param {number} celsius - Temperature in degrees Celsius.
+ * @param {number} celsius Temperature in degrees Celsius.
  * @returns {number} Equivalent Fahrenheit temperature.
  */
 export function celsiusToFahrenheit(celsius) {
@@ -45,38 +28,33 @@ export function celsiusToFahrenheit(celsius) {
 
 
 /**
- * Formats a Celsius temperature according to the application's
- * selected temperature unit.
+ * Formats a Celsius source value according to the requested
+ * application display unit.
  *
- * Open-Meteo is requested in metric/Celsius units. Conversion
- * into Fahrenheit is deliberately performed in the UI/domain
- * layer so one API response supports both display modes.
- *
- * @param {number} celsius - Temperature in Celsius.
- * @param {"C"|"F"} unit - Requested display unit.
- * @returns {string} Rounded temperature including unit label.
+ * @param {number} celsius Source temperature in Celsius.
+ * @param {"C"|"F"} unit Display unit.
+ * @returns {string} Formatted rounded temperature.
  */
 export function formatTemperature(celsius, unit = "C") {
-  const numericTemperature =
+  const temperature =
     unit === "F"
       ? celsiusToFahrenheit(celsius)
       : celsius;
 
-  return `${Math.round(numericTemperature)}°${unit}`;
+  return `${Math.round(temperature)}°${unit}`;
 }
 
 
 /**
- * Converts an Open-Meteo WMO weather interpretation code into
- * a human-readable description.
+ * Maps Open-Meteo WMO weather interpretation codes to
+ * human-readable descriptions.
  *
- * @param {number} code - WMO weather code returned by Open-Meteo.
- * @returns {string} Human-readable weather condition.
+ * @param {number} code WMO weather code.
+ * @returns {string} Weather condition.
  */
 export function getWeatherDescription(code) {
   const descriptions = {
     0: "Clear Sky",
-
     1: "Mainly Clear",
     2: "Partly Cloudy",
     3: "Overcast",
@@ -101,7 +79,6 @@ export function getWeatherDescription(code) {
     71: "Slight Snowfall",
     73: "Moderate Snowfall",
     75: "Heavy Snowfall",
-
     77: "Snow Grains",
 
     80: "Slight Rain Showers",
@@ -112,7 +89,6 @@ export function getWeatherDescription(code) {
     86: "Heavy Snow Showers",
 
     95: "Thunderstorm",
-
     96: "Thunderstorm with Slight Hail",
     99: "Thunderstorm with Heavy Hail",
   };
@@ -122,14 +98,10 @@ export function getWeatherDescription(code) {
 
 
 /**
- * Maps an Open-Meteo WMO weather code to a compact visual
- * weather symbol.
+ * Maps WMO weather codes to intuitive weather symbols.
  *
- * The application deliberately owns this presentation mapping
- * rather than depending on an external weather-icon service.
- *
- * @param {number} code - WMO weather interpretation code.
- * @returns {string} Weather emoji/symbol.
+ * @param {number} code WMO weather code.
+ * @returns {string} Weather emoji.
  */
 export function getWeatherSymbol(code) {
   if (code === 0) {
@@ -154,19 +126,11 @@ export function getWeatherSymbol(code) {
 
   if (
     [
-      51,
-      53,
-      55,
-      56,
-      57,
-      61,
-      63,
-      65,
-      66,
-      67,
-      80,
-      81,
-      82,
+      51, 53, 55,
+      56, 57,
+      61, 63, 65,
+      66, 67,
+      80, 81, 82,
     ].includes(code)
   ) {
     return "🌧️";
@@ -174,12 +138,9 @@ export function getWeatherSymbol(code) {
 
   if (
     [
-      71,
-      73,
-      75,
+      71, 73, 75,
       77,
-      85,
-      86,
+      85, 86,
     ].includes(code)
   ) {
     return "❄️";
@@ -194,38 +155,28 @@ export function getWeatherSymbol(code) {
 
 
 /**
- * Formats an Open-Meteo local ISO-8601 date/time string into
- * a readable 12-hour clock.
+ * Formats an Open-Meteo local ISO timestamp as a 12-hour time.
  *
- * Example:
+ * Open-Meteo is queried with timezone=auto. Therefore the
+ * timestamp already represents the requested location's local
+ * time and should not be transformed through the user's own
+ * browser timezone.
  *
- *     "2026-08-31T18:00"
- *
- * becomes:
- *
- *     "6:00 PM"
- *
- * Important:
- * Open-Meteo is requested with timezone=auto, so returned
- * timestamps already represent the searched location's local
- * clock time. This function therefore avoids converting the
- * timestamp through the browser's own timezone.
- *
- * @param {string} isoDateTime - Open-Meteo local ISO time.
- * @returns {string} Human-readable local time.
+ * @param {string} isoDateTime Local ISO date-time.
+ * @returns {string} Example: "7:35 PM".
  */
 export function formatIsoTime(isoDateTime) {
-  if (!isoDateTime || !isoDateTime.includes("T")) {
+  if (!isoDateTime?.includes("T")) {
     return "N/A";
   }
 
   const [, timePart] = isoDateTime.split("T");
 
-  const [hoursText, minutesText] =
+  const [hourText, minuteText] =
     timePart.split(":");
 
-  const hours = Number(hoursText);
-  const minutes = Number(minutesText);
+  const hours = Number(hourText);
+  const minutes = Number(minuteText);
 
   if (
     Number.isNaN(hours) ||
@@ -234,7 +185,10 @@ export function formatIsoTime(isoDateTime) {
     return "N/A";
   }
 
-  const period = hours >= 12 ? "PM" : "AM";
+  const period =
+    hours >= 12
+      ? "PM"
+      : "AM";
 
   const displayHour =
     hours % 12 === 0
@@ -249,36 +203,33 @@ export function formatIsoTime(isoDateTime) {
 
 
 /**
- * Formats only the hour portion of an Open-Meteo local
- * ISO-8601 date/time.
+ * Formats only the hour component of an Open-Meteo timestamp.
  *
- * Example:
- *
- *     "2026-08-31T18:00"
- *
- * becomes:
- *
- *     "6 PM"
- *
- * @param {string} isoDateTime - Open-Meteo local ISO time.
- * @returns {string} Compact local-hour label.
+ * @param {string} isoDateTime Local ISO timestamp.
+ * @returns {string} Example: "7 PM".
  */
 export function formatIsoHour(isoDateTime) {
-  if (!isoDateTime || !isoDateTime.includes("T")) {
+  if (!isoDateTime?.includes("T")) {
     return "N/A";
   }
 
-  const [, timePart] = isoDateTime.split("T");
+  const [, timePart] =
+    isoDateTime.split("T");
 
-  const [hoursText] = timePart.split(":");
+  const [hourText] =
+    timePart.split(":");
 
-  const hours = Number(hoursText);
+  const hours =
+    Number(hourText);
 
   if (Number.isNaN(hours)) {
     return "N/A";
   }
 
-  const period = hours >= 12 ? "PM" : "AM";
+  const period =
+    hours >= 12
+      ? "PM"
+      : "AM";
 
   const displayHour =
     hours % 12 === 0
@@ -290,22 +241,10 @@ export function formatIsoHour(isoDateTime) {
 
 
 /**
- * Formats an Open-Meteo YYYY-MM-DD date into a short readable
- * forecast label.
+ * Formats YYYY-MM-DD without browser-timezone date shifting.
  *
- * Example:
- *
- *     "2026-08-31"
- *
- * becomes something similar to:
- *
- *     "Mon, Aug 31"
- *
- * UTC is used deliberately so the browser does not shift the
- * calendar date when interpreting the date-only string.
- *
- * @param {string} isoDate - Date formatted as YYYY-MM-DD.
- * @returns {string} Formatted date label.
+ * @param {string} isoDate ISO calendar date.
+ * @returns {string} Example: "Tue, Sep 1".
  */
 export function formatIsoDate(isoDate) {
   if (!isoDate) {
@@ -313,19 +252,22 @@ export function formatIsoDate(isoDate) {
   }
 
   const [year, month, day] =
-    isoDate.split("-").map(Number);
+    isoDate
+      .split("-")
+      .map(Number);
 
   if (!year || !month || !day) {
     return "N/A";
   }
 
-  const date = new Date(
-    Date.UTC(
-      year,
-      month - 1,
-      day
-    )
-  );
+  const date =
+    new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        day
+      )
+    );
 
   return new Intl.DateTimeFormat(
     "en-CA",
@@ -336,4 +278,24 @@ export function formatIsoDate(isoDate) {
       timeZone: "UTC",
     }
   ).format(date);
+}
+
+
+/**
+ * Converts a numeric value into a safe rounded percentage.
+ *
+ * @param {number|null|undefined} value Source percentage.
+ * @returns {number} Clamped percentage in [0, 100].
+ */
+export function normalizePercentage(value) {
+  const numericValue =
+    Number(value ?? 0);
+
+  return Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(numericValue)
+    )
+  );
 }

@@ -1,24 +1,31 @@
 # ============================================================
 # React Weather Forecasting App
-# Continuous Integration Workflow
+# FINAL Continuous Integration Workflow
+# ============================================================
 #
-# Purpose:
-# Automatically validate the React application whenever
-# relevant code is pushed or proposed through a Pull Request.
+# Pipeline:
 #
-# STEP 5 CI Checks:
-#   1. Check out repository source code
-#   2. Configure Node.js
-#   3. Install exact locked dependencies
-#   4. Run ESLint
-#   5. Create a production build
+# Source Change
+#     ↓
+# npm ci
+#     ↓
+# ESLint
+#     ↓
+# Automated Tests
+#     ↓
+# Production Build
+#     ↓
+# Upload Build Artifact
+#     ↓
+# CI PASS / FAIL
 #
 # Author: mghazel
-# Date: 31-Aug-2026
-# Version: 1.0
+# Date: 01-Sep-2026
+# Version: 3.0
 # ============================================================
 
 name: React CI
+
 
 on:
   push:
@@ -32,49 +39,51 @@ on:
       - main
       - develop
 
+  workflow_dispatch:
+
+
 jobs:
   quality-checks:
-    name: Lint and Build
+
+    name: Lint, Test, Build and Package
 
     runs-on: ubuntu-latest
 
-    steps:
-      # ------------------------------------------------------
-      # STEP 1
-      # Download repository source code into the CI runner.
-      # ------------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      # ------------------------------------------------------
-      # STEP 2
-      # Install the Node.js runtime used for the React/Vite
-      # application.
-      # ------------------------------------------------------
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
+
         with:
           node-version: 22
           cache: npm
 
-      # ------------------------------------------------------
-      # STEP 3
-      # Install exactly the dependency versions recorded in
-      # package-lock.json.
-      # ------------------------------------------------------
+
       - name: Install dependencies
         run: npm ci
 
-      # ------------------------------------------------------
-      # STEP 4
-      # Run ESLint and fail the CI job if linting fails.
-      # ------------------------------------------------------
+
       - name: Run ESLint
         run: npm run lint
 
-      # ------------------------------------------------------
-      # STEP 5
-      # Verify that Vite can generate the production build.
-      # ------------------------------------------------------
-      - name: Build application
+
+      - name: Run automated tests
+        run: npm run test:run
+
+
+      - name: Build production application
         run: npm run build
+
+
+      - name: Upload production build artifact
+        uses: actions/upload-artifact@v7
+
+        with:
+          name: react-weather-production-build
+          path: dist/
+          retention-days: 7

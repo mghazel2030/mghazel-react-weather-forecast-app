@@ -1,28 +1,71 @@
-//==================================================
+// ============================================================
 // File name: Header.jsx
-//==================================================
-// Description:
-// Displays the application title and concise user guidance.
+// ============================================================
+// Objective:
+// Display application identity, instructions, and theme
+// control.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 5.0
-//==================================================
+// Date: 01-Sep-2026
+// Version: 7.0
+// ============================================================
+
 
 /**
- * Renders the application header.
+ * Application header.
  *
- * @returns {JSX.Element} Weather application heading.
+ * @param {Object} props Component properties.
+ * @param {"light"|"dark"} props.theme Active theme.
+ * @param {Function} props.onToggleTheme Theme callback.
+ * @returns {JSX.Element} Header.
  */
-function Header() {
+function Header({
+  theme,
+  onToggleTheme,
+}) {
   return (
     <header className="app-header">
-      <h1>City Weather Search</h1>
+      <div
+        className="
+          app-header-inner
+        "
+      >
+        <div>
+          <h1>
+            City Weather Search
+          </h1>
 
-      <p>
-        Search a city or location to view current conditions
-        and forecast information.
-      </p>
+          <p>
+            Search a city or use
+            your current location
+            to view current
+            conditions, hourly
+            forecasts, and the
+            seven-day outlook.
+          </p>
+        </div>
+
+        <button
+          className="
+            theme-toggle-button
+          "
+          type="button"
+          onClick={
+            onToggleTheme
+          }
+          aria-label={
+            `Switch to ${
+              theme === "light"
+                ? "dark"
+                : "light"
+            } mode`
+          }
+        >
+          {theme === "light"
+            ? "🌙 Dark"
+            : "☀️ Light"}
+        </button>
+      </div>
     </header>
   );
 }
