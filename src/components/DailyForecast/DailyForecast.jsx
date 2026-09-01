@@ -1,90 +1,147 @@
-//==================================================
+// ============================================================
 // File name: DailyForecast.jsx
-//==================================================
-// Description:
-// Displays a seven-day forecast summary.
+// ============================================================
+// Objective:
+// Display the seven-day normalized Open-Meteo forecast.
 //
-// STEP 5 establishes the visual and component architecture
-// using sample data. A later step will populate this component
-// from live forecast data.
+// Responsibilities:
+// 1. Render normalized daily forecast records.
+// 2. Display date.
+// 3. Display WMO-derived condition/symbol.
+// 4. Display high and low temperatures.
+// 5. Respect the application's shared Celsius/Fahrenheit unit.
 //
 // Author: mghazel
 // Date: 31-Aug-2026
-// Version: 5.0
-//==================================================
+// Version: 6.0
+// ============================================================
+
+import {
+  formatTemperature,
+} from "../../utils/weatherUtils";
+
 
 /**
- * Converts Celsius to the selected unit.
+ * Seven-day forecast presentation component.
  *
- * @param {number} celsius Celsius temperature.
- * @param {string} unit Selected temperature unit.
+ * @param {Object} props
+ * @param {Object[]} props.forecast
+ * Normalized daily forecast data.
+ * @param {"C"|"F"} props.unit
+ * Active temperature unit.
  *
- * @returns {number} Rounded temperature.
+ * @returns {JSX.Element}
+ * Daily forecast section.
  */
-function convertTemperature(celsius, unit) {
-  if (unit === "F") {
-    return Math.round((celsius * 9) / 5 + 32);
-  }
-
-  return Math.round(celsius);
-}
-
-/**
- * Renders the seven-day forecast.
- *
- * @param {Object} props Component properties.
- * @param {Array<Object>} props.forecast Daily forecast records.
- * @param {string} props.unit Selected temperature unit.
- *
- * @returns {JSX.Element} Daily forecast interface.
- */
-function DailyForecast({ forecast, unit }) {
+function DailyForecast({
+  forecast,
+  unit,
+}) {
   return (
-    <section className="forecast-section">
-      <div className="section-heading">
-        <h2>7-Day Forecast</h2>
+    <section
+      className="
+        forecast-section
+      "
+      aria-labelledby="
+        daily-forecast-heading
+      "
+    >
+      <div
+        className="
+          forecast-section-header
+        "
+      >
+        <div>
+          <p
+            className="
+              section-eyebrow
+            "
+          >
+            Weekly Outlook
+          </p>
 
-        <span className="section-caption">
-          Sample forecast
-        </span>
+          <h2
+            id="
+              daily-forecast-heading
+            "
+          >
+            7-Day Forecast
+          </h2>
+        </div>
       </div>
 
-      <div className="daily-forecast">
-        {forecast.map((day) => (
-          <article
-            className="daily-forecast-row"
-            key={day.day}
-          >
-            <div className="daily-forecast-day">
-              <span
-                className="forecast-icon"
-                aria-hidden="true"
+      <div
+        className="
+          daily-forecast-list
+        "
+      >
+        {forecast.map(
+          (day) => (
+            <article
+              className="
+                daily-forecast-row
+              "
+              key={day.id}
+            >
+              <div
+                className="
+                  daily-date
+                "
               >
-                {day.condition}
-              </span>
+                <strong>
+                  {day.day}
+                </strong>
+              </div>
 
-              <span>{day.day}</span>
-            </div>
+              <div
+                className="
+                  daily-condition
+                "
+              >
+                <span
+                  className="
+                    forecast-symbol
+                  "
+                  aria-hidden="true"
+                >
+                  {
+                    day
+                      .weatherSymbol
+                  }
+                </span>
 
-            <div className="daily-temperatures">
-              <strong>
-                {convertTemperature(
-                  day.highCelsius,
-                  unit
-                )}
-                °
-              </strong>
+                <span>
+                  {
+                    day
+                      .condition
+                  }
+                </span>
+              </div>
 
-              <span>
-                {convertTemperature(
-                  day.lowCelsius,
-                  unit
-                )}
-                °
-              </span>
-            </div>
-          </article>
-        ))}
+              <div
+                className="
+                  daily-temperatures
+                "
+              >
+                <strong>
+                  {formatTemperature(
+                    day
+                      .highCelsius,
+                    unit
+                  )}
+                </strong>
+
+                <span>
+                  {formatTemperature(
+                    day
+                      .lowCelsius,
+                    unit
+                  )}
+                </span>
+              </div>
+            </article>
+          )
+        )}
       </div>
     </section>
   );

@@ -1,151 +1,348 @@
-//==================================================
+// ============================================================
 // File name: App.jsx
-//==================================================
-// Description:
-// Root component for the React Weather Forecasting App.
+// ============================================================
+// Objective:
+// Root application component for the React Weather
+// Forecasting App.
 //
-// STEP 5 evolves the application toward a production-quality
-// weather dashboard. It coordinates application-level state
-// and composes the search, current-weather, hourly-forecast,
-// and daily-forecast components.
+// STEP 6 Major Upgrade:
+// Replace STEP 5 sample weather data with live Open-Meteo
+// weather information.
 //
-// Important:
-// Weather and forecast values remain sample data during
-// STEP 5. Real external weather data will be integrated in
-// a later development step.
+// Main Responsibilities:
+// 1. Maintain shared application state.
+// 2. Load default Vancouver weather on application startup.
+// 3. Process valid SearchBar city/location requests.
+// 4. Call the Open-Meteo service abstraction.
+// 5. Track asynchronous loading state.
+// 6. Track API/network error state.
+// 7. Store normalized live weather data.
+// 8. Maintain the shared Celsius/Fahrenheit display unit.
+// 9. Coordinate presentation components.
 //
-// Processing Workflow:
-// 1. Initialize selected location.
-// 2. Initialize temperature-display unit.
-// 3. Define temporary sample weather/forecast data.
-// 4. Receive validated city submissions from SearchBar.
-// 5. Pass current-weather data to WeatherCard.
-// 6. Pass hourly data to HourlyForecast.
-// 7. Pass daily data to DailyForecast.
-// 8. Re-render automatically following React state updates.
+// Data Flow:
+//
+// SearchBar
+//    ↓
+// App
+//    ↓
+// weatherService
+//    ↓
+// Open-Meteo
+//    ↓
+// normalized weatherData
+//    ↓
+// WeatherCard / HourlyForecast / DailyForecast
 //
 // Author: mghazel
 // Date: 31-Aug-2026
-// Version: 5.0
-//==================================================
+// Version: 6.0
+// ============================================================
 
-import { useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
-import Header from "./components/Header/Header";
-import SearchBar from "./components/SearchBar/SearchBar";
-import WeatherCard from "./components/WeatherCard/WeatherCard";
-import HourlyForecast from "./components/HourlyForecast/HourlyForecast";
-import DailyForecast from "./components/DailyForecast/DailyForecast";
-import Footer from "./components/Footer/Footer";
+import Header from
+  "./components/Header/Header";
+
+import SearchBar from
+  "./components/SearchBar/SearchBar";
+
+import WeatherCard from
+  "./components/WeatherCard/WeatherCard";
+
+import HourlyForecast from
+  "./components/HourlyForecast/HourlyForecast";
+
+import DailyForecast from
+  "./components/DailyForecast/DailyForecast";
+
+import Footer from
+  "./components/Footer/Footer";
+
+import {
+  getWeatherByCity,
+} from "./services/weatherService";
 
 import "./App.css";
 
+
 /**
- * Root application component.
+ * Root React application component.
  *
- * @returns {JSX.Element} Complete weather application interface.
+ * @returns {JSX.Element}
+ * Complete weather application.
  */
 function App() {
-  // --------------------------------------------------
-  // Application State
-  // --------------------------------------------------
-
-  const [city, setCity] = useState("Vancouver");
-
-  const [unit, setUnit] = useState("C");
-
-  // --------------------------------------------------
-  // Temporary STEP 5 Sample Data
-  // --------------------------------------------------
-  //
-  // These structures deliberately resemble data that can
-  // later be populated from an external weather API.
-  // --------------------------------------------------
-
-  const currentWeather = {
-    country: "Canada",
-    temperatureCelsius: 18,
-    feelsLikeCelsius: 17,
-    humidity: 79,
-    windSpeed: 6,
-    uvIndex: 5.2,
-    condition: "Partly Cloudy",
-    weatherIcon: "⛅",
-    sunrise: "06:27 AM",
-    sunset: "07:57 PM",
-  };
-
-  const hourlyForecast = [
-    { time: "12 PM", temperatureCelsius: 18, condition: "⛅" },
-    { time: "1 PM", temperatureCelsius: 19, condition: "🌤️" },
-    { time: "2 PM", temperatureCelsius: 20, condition: "🌤️" },
-    { time: "3 PM", temperatureCelsius: 20, condition: "🌤️" },
-    { time: "4 PM", temperatureCelsius: 21, condition: "☀️" },
-    { time: "5 PM", temperatureCelsius: 21, condition: "☀️" },
-    { time: "6 PM", temperatureCelsius: 20, condition: "🌤️" },
-    { time: "7 PM", temperatureCelsius: 19, condition: "🌤️" },
-  ];
-
-  const dailyForecast = [
-    { day: "Sun, Aug 30", highCelsius: 21, lowCelsius: 12, condition: "☁️" },
-    { day: "Mon, Aug 31", highCelsius: 21, lowCelsius: 13, condition: "☁️" },
-    { day: "Tue, Sep 1", highCelsius: 18, lowCelsius: 13, condition: "🌦️" },
-    { day: "Wed, Sep 2", highCelsius: 14, lowCelsius: 12, condition: "🌧️" },
-    { day: "Thu, Sep 3", highCelsius: 15, lowCelsius: 12, condition: "🌦️" },
-    { day: "Fri, Sep 4", highCelsius: 19, lowCelsius: 12, condition: "☁️" },
-    { day: "Sat, Sep 5", highCelsius: 20, lowCelsius: 13, condition: "🌤️" },
-  ];
+  // ----------------------------------------------------------
+  // APPLICATION STATE
+  // ----------------------------------------------------------
 
   /**
-   * Updates the selected application city following a valid
-   * SearchBar form submission.
+   * Label for the most recently successfully loaded location.
+   */
+  const [
+    city,
+    setCity,
+  ] = useState("Vancouver");
+
+
+  /**
+   * Shared temperature-display unit.
+   *
+   * "C" = Celsius
+   * "F" = Fahrenheit
+   */
+  const [
+    unit,
+    setUnit,
+  ] = useState("C");
+
+
+  /**
+   * Normalized live weather information.
+   *
+   * null means no successful response has been loaded yet.
+   */
+  const [
+    weatherData,
+    setWeatherData,
+  ] = useState(null);
+
+
+  /**
+   * Indicates whether an asynchronous weather request is
+   * currently active.
+   */
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(false);
+
+
+  /**
+   * User-readable API/network error.
+   *
+   * Empty string means no active weather-service error.
+   */
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+
+  // ----------------------------------------------------------
+  // WEATHER LOADING PIPELINE
+  // ----------------------------------------------------------
+
+  /**
+   * Loads weather information for a location.
+   *
+   * Request lifecycle:
+   *
+   *     start
+   *       ↓
+   *     loading = true
+   *       ↓
+   *     clear old error
+   *       ↓
+   *     call weather service
+   *       ↓
+   *   success / failure
+   *       ↓
+   *     loading = false
+   *
+   * The function is memoized with useCallback so it can safely
+   * participate in the initial useEffect dependency array.
+   *
+   * @param {string} locationQuery
+   * City/location to search.
+   *
+   * @returns {Promise<void>}
+   */
+  const loadWeather =
+    useCallback(
+      async (locationQuery) => {
+        setIsLoading(true);
+
+        setErrorMessage("");
+
+        try {
+          const data =
+            await getWeatherByCity(
+              locationQuery
+            );
+
+          setWeatherData(data);
+
+          setCity(
+            data.location.displayName
+          );
+        } catch (error) {
+          setErrorMessage(
+            error.message ||
+              "Weather information could not be loaded."
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      []
+    );
+
+
+  // ----------------------------------------------------------
+  // INITIAL APPLICATION LOAD
+  // ----------------------------------------------------------
+
+  /**
+   * Load default weather information once when the application
+   * mounts.
+   */
+  useEffect(() => {
+    loadWeather("Vancouver");
+  }, [loadWeather]);
+
+
+  // ----------------------------------------------------------
+  // EVENT HANDLERS
+  // ----------------------------------------------------------
+
+  /**
+   * Handles a valid city/location submitted by SearchBar.
    *
    * @param {string} selectedCity
-   * Validated city or location.
+   * User-entered location.
    *
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  function handleCitySearch(selectedCity) {
-    setCity(selectedCity);
+  async function handleCitySearch(
+    selectedCity
+  ) {
+    await loadWeather(
+      selectedCity
+    );
   }
 
+
   /**
-   * Toggles the temperature-display unit.
+   * Toggles shared temperature presentation between Celsius
+   * and Fahrenheit.
+   *
+   * The underlying Open-Meteo data remains Celsius; only the
+   * display representation changes.
    *
    * @returns {void}
    */
   function handleToggleUnit() {
-    setUnit((currentUnit) =>
-      currentUnit === "C" ? "F" : "C"
+    setUnit(
+      (currentUnit) =>
+        currentUnit === "C"
+          ? "F"
+          : "C"
     );
   }
+
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
 
   return (
     <div className="app">
       <Header />
 
-      <main className="app-main">
+      <main
+        className="app-main"
+        aria-busy={isLoading}
+      >
         <SearchBar
           city={city}
-          onSearch={handleCitySearch}
+          onSearch={
+            handleCitySearch
+          }
+          isLoading={
+            isLoading
+          }
         />
 
-        <WeatherCard
-          city={city}
-          weather={currentWeather}
-          unit={unit}
-          onToggleUnit={handleToggleUnit}
-        />
+        {isLoading && (
+          <section
+            className="status-panel"
+            role="status"
+            aria-live="polite"
+          >
+            <div
+              className="loading-spinner"
+              aria-hidden="true"
+            />
 
-        <HourlyForecast
-          forecast={hourlyForecast}
-          unit={unit}
-        />
+            <p>
+              Loading weather
+              information...
+            </p>
+          </section>
+        )}
 
-        <DailyForecast
-          forecast={dailyForecast}
-          unit={unit}
-        />
+        {errorMessage &&
+          !isLoading && (
+            <section
+              className="
+                status-panel
+                status-error
+              "
+              role="alert"
+            >
+              <h2>
+                Unable to Load
+                Weather
+              </h2>
+
+              <p>
+                {errorMessage}
+              </p>
+            </section>
+          )}
+
+        {weatherData &&
+          !isLoading && (
+            <>
+              <WeatherCard
+                city={
+                  weatherData
+                    .location
+                    .displayName
+                }
+                weather={
+                  weatherData
+                    .current
+                }
+                unit={unit}
+                onToggleUnit={
+                  handleToggleUnit
+                }
+              />
+
+              <HourlyForecast
+                forecast={
+                  weatherData
+                    .hourly
+                }
+                unit={unit}
+              />
+
+              <DailyForecast
+                forecast={
+                  weatherData
+                    .daily
+                }
+                unit={unit}
+              />
+            </>
+          )}
       </main>
 
       <Footer />
