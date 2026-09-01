@@ -1,86 +1,140 @@
-//==================================================
+// ============================================================
 // File name: SearchBar.jsx
-//==================================================
-// Description:
-// Controlled React form used to submit weather locations.
+// ============================================================
+// Objective:
+// Provide a controlled, accessible city/location search form.
 //
-// STEP 5 retains the STEP 4 controlled-form architecture
-// while upgrading the presentation toward the final weather
-// dashboard design.
+// Responsibilities:
+// 1. Maintain local input state.
+// 2. Validate user input.
+// 3. Display form-validation errors.
+// 4. Submit valid locations to App.jsx.
+// 5. Clear input/error state.
+// 6. Disable controls during asynchronous weather requests.
 //
-// Processing Workflow:
-// 1. User enters a location.
-// 2. onChange synchronizes React form state.
-// 3. User submits using Search or Enter.
-// 4. Default browser submission is prevented.
-// 5. Input is normalized and validated.
-// 6. Valid location is passed to App through onSearch.
-// 7. Invalid input displays validation feedback.
+// STEP 6 Addition:
+// The isLoading prop prevents repeated weather requests while
+// an existing request is in progress.
 //
 // Author: mghazel
 // Date: 31-Aug-2026
-// Version: 5.0
-//==================================================
+// Version: 6.0
+// ============================================================
 
-import { useState } from "react";
+import {
+  useState,
+} from "react";
+
 
 /**
- * Renders the controlled weather-location search form.
+ * Search form used to submit city/location names.
  *
- * @param {Object} props Component properties.
- * @param {string} props.city Current selected city.
- * @param {Function} props.onSearch Valid-location callback.
+ * @param {Object} props
+ * @param {string} props.city
+ * Currently displayed location.
+ * @param {Function} props.onSearch
+ * Parent callback invoked for valid search input.
+ * @param {boolean} props.isLoading
+ * Whether a weather request is currently active.
  *
- * @returns {JSX.Element} Search interface.
+ * @returns {JSX.Element}
+ * Controlled location-search form.
  */
-function SearchBar({ city, onSearch }) {
-  const [cityInput, setCityInput] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+function SearchBar({
+  city,
+  onSearch,
+  isLoading,
+}) {
+  // ----------------------------------------------------------
+  // LOCAL FORM STATE
+  // ----------------------------------------------------------
+
+  const [
+    cityInput,
+    setCityInput,
+  ] = useState("");
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+
+  // ----------------------------------------------------------
+  // INPUT HANDLER
+  // ----------------------------------------------------------
 
   /**
-   * Updates local controlled-input state.
+   * Synchronizes the text input with React state.
+   *
+   * Existing validation feedback is cleared when the user
+   * begins correcting the input.
    *
    * @param {React.ChangeEvent<HTMLInputElement>} event
-   * Input change event.
+   * Input-change event.
    *
    * @returns {void}
    */
-  function handleInputChange(event) {
-    setCityInput(event.target.value);
+  function handleInputChange(
+    event
+  ) {
+    setCityInput(
+      event.target.value
+    );
 
     if (errorMessage) {
       setErrorMessage("");
     }
   }
 
+
+  // ----------------------------------------------------------
+  // SUBMIT HANDLER
+  // ----------------------------------------------------------
+
   /**
-   * Validates and submits the weather location.
+   * Validates and submits a city/location.
+   *
+   * event.preventDefault() prevents the browser's traditional
+   * HTML form navigation/reload so React remains in control.
    *
    * @param {React.FormEvent<HTMLFormElement>} event
-   * Form submission event.
+   * Form submit event.
    *
    * @returns {void}
    */
-  function handleSubmit(event) {
+  function handleSubmit(
+    event
+  ) {
     event.preventDefault();
 
-    const normalizedCity = cityInput.trim();
+    const normalizedInput =
+      cityInput.trim();
 
-    if (!normalizedCity) {
+    if (!normalizedInput) {
       setErrorMessage(
         "Please enter a city or location."
       );
+
       return;
     }
 
-    onSearch(normalizedCity);
+    setErrorMessage("");
+
+    onSearch(
+      normalizedInput
+    );
 
     setCityInput("");
-    setErrorMessage("");
   }
 
+
+  // ----------------------------------------------------------
+  // CLEAR HANDLER
+  // ----------------------------------------------------------
+
   /**
-   * Clears the search field and validation feedback.
+   * Clears the form input and validation feedback.
    *
    * @returns {void}
    */
@@ -89,62 +143,89 @@ function SearchBar({ city, onSearch }) {
     setErrorMessage("");
   }
 
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
+
   return (
-    <section className="search-panel">
+    <section
+      className="search-panel"
+      aria-label="Weather search"
+    >
       <form
         className="search-form"
-        onSubmit={handleSubmit}
+        onSubmit={
+          handleSubmit
+        }
         noValidate
       >
-        <div className="search-input-wrapper">
-          <label
-            className="sr-only"
-            htmlFor="city-search"
-          >
-            City or Location
-          </label>
+        <label
+          className="sr-only"
+          htmlFor="city-search"
+        >
+          City or location
+        </label>
 
-          <input
-            id="city-search"
-            name="city"
-            type="text"
-            value={cityInput}
-            onChange={handleInputChange}
-            placeholder={`Search another city — current: ${city}`}
-            autoComplete="off"
-            aria-describedby={
-              errorMessage
-                ? "city-search-error"
-                : undefined
-            }
-          />
-
-          {errorMessage && (
-            <p
-              id="city-search-error"
-              className="form-error"
-              role="alert"
-            >
-              {errorMessage}
-            </p>
-          )}
-        </div>
+        <input
+          id="city-search"
+          name="city"
+          type="text"
+          value={cityInput}
+          onChange={
+            handleInputChange
+          }
+          placeholder={
+            `Search another city — current: ${city}`
+          }
+          autoComplete="off"
+          disabled={isLoading}
+          aria-describedby={
+            errorMessage
+              ? "city-search-error"
+              : undefined
+          }
+        />
 
         <button
-          className="button button-primary"
+          className="
+            button
+            button-primary
+          "
           type="submit"
+          disabled={isLoading}
         >
-          Search
+          {isLoading
+            ? "Searching..."
+            : "Search"}
         </button>
 
         <button
-          className="button button-secondary"
+          className="
+            button
+            button-secondary
+          "
           type="button"
-          onClick={handleClear}
+          onClick={
+            handleClear
+          }
+          disabled={isLoading}
         >
           Clear
         </button>
       </form>
+
+      {errorMessage && (
+        <p
+          id="city-search-error"
+          className="
+            form-error-message
+          "
+          role="alert"
+        >
+          {errorMessage}
+        </p>
+      )}
     </section>
   );
 }
