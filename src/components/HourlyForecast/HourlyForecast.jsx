@@ -1,80 +1,141 @@
-//==================================================
+// ============================================================
 // File name: HourlyForecast.jsx
-//==================================================
-// Description:
-// Displays a horizontally scrollable short-term forecast.
+// ============================================================
+// Objective:
+// Display the next twelve normalized hourly forecast entries.
 //
-// STEP 5 uses sample forecast data to establish the
-// presentation architecture. Live forecast data will replace
-// the sample data in a later step.
+// Responsibilities:
+// 1. Receive normalized hourly weather objects from App.jsx.
+// 2. Render data using React .map().
+// 3. Display local forecast hour.
+// 4. Display WMO-derived weather symbol/condition.
+// 5. Display temperature using the shared C/F unit.
+//
+// Important:
+// The service layer already selects the next twelve hours.
+// This presentation component does not know Open-Meteo's
+// parallel-array response format.
 //
 // Author: mghazel
 // Date: 31-Aug-2026
-// Version: 5.0
-//==================================================
+// Version: 6.0
+// ============================================================
+
+import {
+  formatTemperature,
+} from "../../utils/weatherUtils";
+
 
 /**
- * Converts Celsius to the requested unit.
+ * Hourly forecast presentation component.
  *
- * @param {number} celsius Temperature in Celsius.
- * @param {string} unit Selected display unit.
+ * @param {Object} props
+ * @param {Object[]} props.forecast
+ * Array of normalized hourly weather objects.
+ * @param {"C"|"F"} props.unit
+ * Active temperature unit.
  *
- * @returns {number} Rounded display temperature.
+ * @returns {JSX.Element}
+ * Next-hours forecast section.
  */
-function convertTemperature(celsius, unit) {
-  if (unit === "F") {
-    return Math.round((celsius * 9) / 5 + 32);
-  }
-
-  return Math.round(celsius);
-}
-
-/**
- * Renders the short-term hourly forecast.
- *
- * @param {Object} props Component properties.
- * @param {Array<Object>} props.forecast Hourly forecast records.
- * @param {string} props.unit Selected display unit.
- *
- * @returns {JSX.Element} Hourly forecast section.
- */
-function HourlyForecast({ forecast, unit }) {
+function HourlyForecast({
+  forecast,
+  unit,
+}) {
   return (
-    <section className="forecast-section">
-      <div className="section-heading">
-        <h2>Next Hours</h2>
+    <section
+      className="
+        forecast-section
+      "
+      aria-labelledby="
+        hourly-forecast-heading
+      "
+    >
+      <div
+        className="
+          forecast-section-header
+        "
+      >
+        <div>
+          <p
+            className="
+              section-eyebrow
+            "
+          >
+            Hourly Outlook
+          </p>
 
-        <span className="section-caption">
-          Sample forecast
-        </span>
+          <h2
+            id="
+              hourly-forecast-heading
+            "
+          >
+            Next 12 Hours
+          </h2>
+        </div>
       </div>
 
-      <div className="hourly-forecast">
-        {forecast.map((hour) => (
-          <article
-            className="hourly-card"
-            key={hour.time}
-          >
-            <p className="forecast-time">
-              {hour.time}
-            </p>
-
-            <div
-              className="forecast-icon"
-              aria-hidden="true"
+      <div
+        className="
+          hourly-forecast-list
+        "
+      >
+        {forecast.map(
+          (hour) => (
+            <article
+              className="
+                hourly-forecast-card
+              "
+              key={hour.id}
+              title={
+                hour.condition
+              }
             >
-              {hour.condition}
-            </div>
+              <p
+                className="
+                  hourly-time
+                "
+              >
+                {hour.time}
+              </p>
 
-            <strong>
-              {convertTemperature(
-                hour.temperatureCelsius,
-                unit
-              )}
-              °{unit}
-            </strong>
-          </article>
-        ))}
+              <div
+                className="
+                  forecast-symbol
+                "
+                aria-hidden="true"
+              >
+                {
+                  hour
+                    .weatherSymbol
+                }
+              </div>
+
+              <p
+                className="
+                  hourly-condition
+                "
+              >
+                {
+                  hour
+                    .condition
+                }
+              </p>
+
+              <strong
+                className="
+                  hourly-temperature
+                "
+              >
+                {formatTemperature(
+                  hour
+                    .temperatureCelsius,
+                  unit
+                )}
+              </strong>
+            </article>
+          )
+        )}
       </div>
     </section>
   );
