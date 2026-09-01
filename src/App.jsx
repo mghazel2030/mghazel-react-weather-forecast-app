@@ -2,41 +2,22 @@
 // File name: App.jsx
 // ============================================================
 // Objective:
-// Root application component for the React Weather
+// Root application controller for the final React Weather
 // Forecasting App.
 //
-// STEP 6 Major Upgrade:
-// Replace STEP 5 sample weather data with live Open-Meteo
-// weather information.
-//
-// Main Responsibilities:
-// 1. Maintain shared application state.
-// 2. Load default Vancouver weather on application startup.
-// 3. Process valid SearchBar city/location requests.
-// 4. Call the Open-Meteo service abstraction.
-// 5. Track asynchronous loading state.
-// 6. Track API/network error state.
-// 7. Store normalized live weather data.
-// 8. Maintain the shared Celsius/Fahrenheit display unit.
-// 9. Coordinate presentation components.
-//
-// Data Flow:
-//
-// SearchBar
-//    ↓
-// App
-//    ↓
-// weatherService
-//    ↓
-// Open-Meteo
-//    ↓
-// normalized weatherData
-//    ↓
-// WeatherCard / HourlyForecast / DailyForecast
+// STEP 7 Responsibilities:
+// - Load default live weather.
+// - Search by city.
+// - Search by current geographic location.
+// - Manage loading/error states.
+// - Clear displayed weather.
+// - Manage Celsius/Fahrenheit.
+// - Manage light/dark theme.
+// - Coordinate current/hourly/daily/chart components.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 6.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -60,114 +41,93 @@ import HourlyForecast from
 import DailyForecast from
   "./components/DailyForecast/DailyForecast";
 
+import TemperatureChart from
+  "./components/TemperatureChart/TemperatureChart";
+
 import Footer from
   "./components/Footer/Footer";
 
 import {
   getWeatherByCity,
+  getWeatherByCoordinates,
 } from "./services/weatherService";
+
+import {
+  getCurrentCoordinates,
+} from "./services/geolocationService";
 
 import "./App.css";
 
 
+const DEFAULT_CITY =
+  "Vancouver";
+
+
 /**
- * Root React application component.
+ * Root weather application component.
  *
- * @returns {JSX.Element}
- * Complete weather application.
+ * @returns {JSX.Element} Application UI.
  */
 function App() {
-  // ----------------------------------------------------------
-  // APPLICATION STATE
-  // ----------------------------------------------------------
-
-  /**
-   * Label for the most recently successfully loaded location.
-   */
   const [
     city,
     setCity,
-  ] = useState("Vancouver");
+  ] = useState(
+    DEFAULT_CITY
+  );
 
-
-  /**
-   * Shared temperature-display unit.
-   *
-   * "C" = Celsius
-   * "F" = Fahrenheit
-   */
   const [
     unit,
     setUnit,
   ] = useState("C");
 
-
-  /**
-   * Normalized live weather information.
-   *
-   * null means no successful response has been loaded yet.
-   */
   const [
     weatherData,
     setWeatherData,
   ] = useState(null);
 
-
-  /**
-   * Indicates whether an asynchronous weather request is
-   * currently active.
-   */
   const [
     isLoading,
     setIsLoading,
   ] = useState(false);
 
-
-  /**
-   * User-readable API/network error.
-   *
-   * Empty string means no active weather-service error.
-   */
   const [
     errorMessage,
     setErrorMessage,
   ] = useState("");
 
+  const [
+    theme,
+    setTheme,
+  ] = useState(
+    () =>
+      localStorage.getItem(
+        "weather-theme"
+      ) ?? "light"
+  );
 
-  // ----------------------------------------------------------
-  // WEATHER LOADING PIPELINE
-  // ----------------------------------------------------------
 
   /**
-   * Loads weather information for a location.
-   *
-   * Request lifecycle:
-   *
-   *     start
-   *       ↓
-   *     loading = true
-   *       ↓
-   *     clear old error
-   *       ↓
-   *     call weather service
-   *       ↓
-   *   success / failure
-   *       ↓
-   *     loading = false
-   *
-   * The function is memoized with useCallback so it can safely
-   * participate in the initial useEffect dependency array.
-   *
-   * @param {string} locationQuery
-   * City/location to search.
-   *
-   * @returns {Promise<void>}
+   * Apply and persist the active presentation theme.
+   */
+  useEffect(() => {
+    document.documentElement.dataset.theme =
+      theme;
+
+    localStorage.setItem(
+      "weather-theme",
+      theme
+    );
+  }, [theme]);
+
+
+  /**
+   * Loads weather by a city/location string.
    */
   const loadWeather =
     useCallback(
       async (locationQuery) => {
         setIsLoading(true);
-
         setErrorMessage("");
 
         try {
@@ -194,30 +154,18 @@ function App() {
     );
 
 
-  // ----------------------------------------------------------
-  // INITIAL APPLICATION LOAD
-  // ----------------------------------------------------------
-
   /**
-   * Load default weather information once when the application
-   * mounts.
+   * Load Vancouver as the initial weather location.
    */
   useEffect(() => {
-    loadWeather("Vancouver");
+    loadWeather(
+      DEFAULT_CITY
+    );
   }, [loadWeather]);
 
 
-  // ----------------------------------------------------------
-  // EVENT HANDLERS
-  // ----------------------------------------------------------
-
   /**
-   * Handles a valid city/location submitted by SearchBar.
-   *
-   * @param {string} selectedCity
-   * User-entered location.
-   *
-   * @returns {Promise<void>}
+   * SearchBar callback.
    */
   async function handleCitySearch(
     selectedCity
@@ -229,13 +177,60 @@ function App() {
 
 
   /**
-   * Toggles shared temperature presentation between Celsius
-   * and Fahrenheit.
-   *
-   * The underlying Open-Meteo data remains Celsius; only the
-   * display representation changes.
-   *
-   * @returns {void}
+   * Retrieves geographic coordinates from the browser and
+   * then loads weather directly for those coordinates.
+   */
+  async function handleUseMyLocation() {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const {
+        latitude,
+        longitude,
+      } =
+        await getCurrentCoordinates();
+
+      const data =
+        await getWeatherByCoordinates(
+          latitude,
+          longitude,
+          "Current Location"
+        );
+
+      setWeatherData(data);
+
+      setCity(
+        data.location.displayName
+      );
+    } catch (error) {
+      setErrorMessage(
+        error.message ||
+          "Unable to retrieve weather for your current location."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+
+  /**
+   * Clears displayed weather while leaving the application
+   * ready for another search.
+   */
+  function handleClearWeather() {
+    setWeatherData(null);
+
+    setErrorMessage("");
+
+    setCity(
+      "No location selected"
+    );
+  }
+
+
+  /**
+   * Toggles C/F presentation.
    */
   function handleToggleUnit() {
     setUnit(
@@ -247,13 +242,27 @@ function App() {
   }
 
 
-  // ----------------------------------------------------------
-  // RENDER
-  // ----------------------------------------------------------
+  /**
+   * Toggles light/dark mode.
+   */
+  function handleToggleTheme() {
+    setTheme(
+      (currentTheme) =>
+        currentTheme === "light"
+          ? "dark"
+          : "light"
+    );
+  }
+
 
   return (
     <div className="app">
-      <Header />
+      <Header
+        theme={theme}
+        onToggleTheme={
+          handleToggleTheme
+        }
+      />
 
       <main
         className="app-main"
@@ -263,6 +272,12 @@ function App() {
           city={city}
           onSearch={
             handleCitySearch
+          }
+          onUseMyLocation={
+            handleUseMyLocation
+          }
+          onClear={
+            handleClearWeather
           }
           isLoading={
             isLoading
@@ -309,7 +324,11 @@ function App() {
 
         {weatherData &&
           !isLoading && (
-            <>
+            <div
+              className="
+                weather-dashboard
+              "
+            >
               <WeatherCard
                 city={
                   weatherData
@@ -341,7 +360,41 @@ function App() {
                 }
                 unit={unit}
               />
-            </>
+
+              <TemperatureChart
+                forecast={
+                  weatherData
+                    .daily
+                }
+                unit={unit}
+                theme={theme}
+              />
+            </div>
+          )}
+
+        {!weatherData &&
+          !isLoading &&
+          !errorMessage && (
+            <section
+              className="
+                empty-weather-state
+              "
+            >
+              <span
+                aria-hidden="true"
+              >
+                🌦️
+              </span>
+
+              <h2>
+                Search for Weather
+              </h2>
+
+              <p>
+                Enter a city or use
+                your current location.
+              </p>
+            </section>
           )}
       </main>
 

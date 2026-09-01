@@ -2,18 +2,12 @@
 // File name: DailyForecast.jsx
 // ============================================================
 // Objective:
-// Display the seven-day normalized Open-Meteo forecast.
-//
-// Responsibilities:
-// 1. Render normalized daily forecast records.
-// 2. Display date.
-// 3. Display WMO-derived condition/symbol.
-// 4. Display high and low temperatures.
-// 5. Respect the application's shared Celsius/Fahrenheit unit.
+// Present a seven-day forecast with weather condition,
+// high/low temperatures, and precipitation probability.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 6.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -21,27 +15,13 @@ import {
 } from "../../utils/weatherUtils";
 
 
-/**
- * Seven-day forecast presentation component.
- *
- * @param {Object} props
- * @param {Object[]} props.forecast
- * Normalized daily forecast data.
- * @param {"C"|"F"} props.unit
- * Active temperature unit.
- *
- * @returns {JSX.Element}
- * Daily forecast section.
- */
 function DailyForecast({
   forecast,
   unit,
 }) {
   return (
     <section
-      className="
-        forecast-section
-      "
+      className="forecast-section"
       aria-labelledby="
         daily-forecast-heading
       "
@@ -111,12 +91,25 @@ function DailyForecast({
                 </span>
 
                 <span>
-                  {
-                    day
-                      .condition
-                  }
+                  {day.condition}
                 </span>
               </div>
+
+              <span
+                className="
+                  daily-rain
+                "
+                title="
+                  Maximum precipitation
+                  probability
+                "
+              >
+                ☔{" "}
+                {
+                  day
+                    .precipitationProbability
+                }%
+              </span>
 
               <div
                 className="
@@ -125,16 +118,14 @@ function DailyForecast({
               >
                 <strong>
                   {formatTemperature(
-                    day
-                      .highCelsius,
+                    day.highCelsius,
                     unit
                   )}
                 </strong>
 
                 <span>
                   {formatTemperature(
-                    day
-                      .lowCelsius,
+                    day.lowCelsius,
                     unit
                   )}
                 </span>

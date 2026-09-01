@@ -1,61 +1,69 @@
-/*============================================================
-File name: index.css
-==============================================================
-Description:
-Global browser and document-level styles for the React Weather
-Forecasting App.
+/* ============================================================
+   File name: index.css
+   Objective:
+   Global browser reset and application-level base styling.
 
-Author: mghazel
-Date: 31-Aug-2026
-Version: 5.0
-============================================================*/
+   Author: mghazel
+   Date: 01-Sep-2026
+   Version: 7.0
+   ============================================================ */
 
-:root {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+
+  margin: 0;
+
   font-family:
     Inter,
+    ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
 
-  color: #202737;
-  background: #edf8ef;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  min-width: 320px;
-  background: #edf8ef;
-}
-
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
   background:
-    linear-gradient(
-      180deg,
-      #eaf8ed 0%,
-      #f6faf7 100%
-    );
+    var(--page-background);
+
+  color:
+    var(--text-primary);
+
+  transition:
+    background-color
+    0.25s ease,
+    color
+    0.25s ease;
 }
 
 button,
 input {
-  font: inherit;
+  font:
+    inherit;
 }
 
 button {
-  -webkit-tap-highlight-color: transparent;
+  touch-action:
+    manipulation;
+}
+
+a {
+  color:
+    inherit;
 }
 
 #root {
-  min-height: 100vh;
+  min-height:
+    100vh;
 }

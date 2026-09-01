@@ -2,26 +2,11 @@
 // File name: WeatherCard.jsx
 // ============================================================
 // Objective:
-// Present current normalized weather information.
-//
-// Responsibilities:
-// 1. Display location.
-// 2. Display current weather condition.
-// 3. Display current temperature.
-// 4. Display apparent/"feels like" temperature.
-// 5. Display humidity.
-// 6. Display wind speed.
-// 7. Display today's maximum UV index.
-// 8. Display sunrise and sunset.
-// 9. Provide the Celsius/Fahrenheit toggle.
-//
-// Design Principle:
-// This component does not understand Open-Meteo's raw JSON.
-// It consumes the normalized application weather model.
+// Present the current live weather conditions.
 //
 // Author: mghazel
-// Date: 31-Aug-2026
-// Version: 6.0
+// Date: 01-Sep-2026
+// Version: 7.0
 // ============================================================
 
 import {
@@ -30,20 +15,7 @@ import {
 
 
 /**
- * Current-weather presentation component.
- *
- * @param {Object} props
- * @param {string} props.city
- * Human-readable location.
- * @param {Object} props.weather
- * Normalized current-weather object.
- * @param {"C"|"F"} props.unit
- * Active temperature display unit.
- * @param {Function} props.onToggleUnit
- * Parent callback for changing temperature units.
- *
- * @returns {JSX.Element}
- * Current-weather card.
+ * Current weather card.
  */
 function WeatherCard({
   city,
@@ -72,11 +44,7 @@ function WeatherCard({
           {weather.weatherSymbol}
         </div>
 
-        <div
-          className="
-            current-weather-summary
-          "
-        >
+        <div>
           <p
             className="
               current-weather-label
@@ -114,9 +82,7 @@ function WeatherCard({
           </p>
 
           <p
-            className="
-              feels-like
-            "
+            className="feels-like"
           >
             Feels like{" "}
             {formatTemperature(
@@ -133,37 +99,35 @@ function WeatherCard({
           current-weather-details
         "
       >
-        <div
-          className="weather-metric"
-        >
+        <div className="weather-metric">
           <span>Humidity</span>
-
           <strong>
             {weather.humidity}%
           </strong>
         </div>
 
-        <div
-          className="weather-metric"
-        >
+        <div className="weather-metric">
           <span>Wind</span>
-
           <strong>
             {Math.round(
-              weather
-                .windSpeedKmh
+              weather.windSpeedKmh
             )}{" "}
             km/h
           </strong>
         </div>
 
-        <div
-          className="weather-metric"
-        >
-          <span>
-            UV Max Today
-          </span>
+        <div className="weather-metric">
+          <span>Precipitation</span>
+          <strong>
+            {Number(
+              weather.precipitationMm
+            ).toFixed(1)}{" "}
+            mm
+          </strong>
+        </div>
 
+        <div className="weather-metric">
+          <span>UV Max Today</span>
           <strong>
             {Number(
               weather.uvIndex
@@ -171,21 +135,15 @@ function WeatherCard({
           </strong>
         </div>
 
-        <div
-          className="weather-metric"
-        >
+        <div className="weather-metric">
           <span>Sunrise</span>
-
           <strong>
             {weather.sunrise}
           </strong>
         </div>
 
-        <div
-          className="weather-metric"
-        >
+        <div className="weather-metric">
           <span>Sunset</span>
-
           <strong>
             {weather.sunset}
           </strong>
