@@ -9,9 +9,13 @@
 // Final behavioral tests for city search, validation,
 // geolocation action, clear behavior, and loading state.
 //
+// FINAL-TOUCHES NOTE:
+// The input now uses type="search", which exposes the
+// accessibility role "searchbox" rather than "textbox".
+//
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
 
 import {
@@ -59,7 +63,7 @@ describe(
 
         const input =
           screen.getByRole(
-            "textbox",
+            "searchbox",
             {
               name:
                 /city or location/i,
@@ -199,7 +203,7 @@ describe(
 
         const input =
           screen.getByRole(
-            "textbox",
+            "searchbox",
             {
               name:
                 /city or location/i,
@@ -208,6 +212,12 @@ describe(
 
         await user.type(
           input,
+          "Montreal"
+        );
+
+        expect(
+          input
+        ).toHaveValue(
           "Montreal"
         );
 
@@ -251,7 +261,11 @@ describe(
 
         expect(
           screen.getByRole(
-            "textbox"
+            "searchbox",
+            {
+              name:
+                /city or location/i,
+            }
           )
         ).toBeDisabled();
 

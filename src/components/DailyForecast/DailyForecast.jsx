@@ -2,17 +2,24 @@
 // File name: DailyForecast.jsx
 // ============================================================
 // Objective:
-// Present a seven-day forecast with weather condition,
-// high/low temperatures, and precipitation probability.
+// Present the seven-day weather outlook.
+//
+// FINAL-TOUCHES:
+// - Scoped CSS Module.
+// - Improved responsive layout.
+// - More descriptive accessibility text.
 //
 // Author: mghazel
 // Date: 01-Sep-2026
-// Version: 7.0
+// Version: 8.0
 // ============================================================
 
 import {
   formatTemperature,
 } from "../../utils/weatherUtils";
+
+import styles from
+  "./DailyForecast.module.css";
 
 
 function DailyForecast({
@@ -21,52 +28,61 @@ function DailyForecast({
 }) {
   return (
     <section
-      className="forecast-section"
+      className={
+        styles.section
+      }
       aria-labelledby="
         daily-forecast-heading
       "
     >
-      <div
-        className="
-          forecast-section-header
-        "
+      <header
+        className={
+          styles.header
+        }
       >
-        <div>
-          <p
-            className="
-              section-eyebrow
-            "
-          >
-            Weekly Outlook
-          </p>
+        <p
+          className={
+            styles.eyebrow
+          }
+        >
+          Weekly Outlook
+        </p>
 
-          <h2
-            id="
-              daily-forecast-heading
-            "
-          >
-            7-Day Forecast
-          </h2>
-        </div>
-      </div>
+        <h2
+          id="
+            daily-forecast-heading
+          "
+        >
+          7-Day Forecast
+        </h2>
+      </header>
 
       <div
-        className="
-          daily-forecast-list
-        "
+        className={
+          styles.list
+        }
       >
         {forecast.map(
           (day) => (
             <article
-              className="
-                daily-forecast-row
-              "
+              className={
+                styles.row
+              }
               key={day.id}
+              aria-label={
+                `${day.day}: ${day.condition}, high ${formatTemperature(
+                  day.highCelsius,
+                  unit
+                )}, low ${formatTemperature(
+                  day.lowCelsius,
+                  unit
+                )}, precipitation probability ${day.precipitationProbability}%`
+              }
             >
               <div
-                className="
-                  daily-date
-                "
+                className={
+                  styles.date
+                }
               >
                 <strong>
                   {day.day}
@@ -74,14 +90,14 @@ function DailyForecast({
               </div>
 
               <div
-                className="
-                  daily-condition
-                "
+                className={
+                  styles.condition
+                }
               >
                 <span
-                  className="
-                    forecast-symbol
-                  "
+                  className={
+                    styles.symbol
+                  }
                   aria-hidden="true"
                 >
                   {
@@ -96,9 +112,9 @@ function DailyForecast({
               </div>
 
               <span
-                className="
-                  daily-rain
-                "
+                className={
+                  styles.rain
+                }
                 title="
                   Maximum precipitation
                   probability
@@ -112,20 +128,22 @@ function DailyForecast({
               </span>
 
               <div
-                className="
-                  daily-temperatures
-                "
+                className={
+                  styles.temperatures
+                }
               >
                 <strong>
                   {formatTemperature(
-                    day.highCelsius,
+                    day
+                      .highCelsius,
                     unit
                   )}
                 </strong>
 
                 <span>
                   {formatTemperature(
-                    day.lowCelsius,
+                    day
+                      .lowCelsius,
                     unit
                   )}
                 </span>

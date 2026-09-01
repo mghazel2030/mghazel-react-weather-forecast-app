@@ -1,0 +1,51 @@
+/* ============================================================
+   Footer.module.css
+
+   Author: mghazel
+   Date: 01-Sep-2026
+   Version: 1.0
+   ============================================================ */
+
+.footer {
+  margin-top:
+    2rem;
+
+  padding:
+    1.4rem
+    1rem;
+
+  border-top:
+    3px solid
+    var(--navy);
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text-secondary);
+
+  text-align:
+    center;
+}
+
+
+.footer p {
+  margin:
+    0.25rem
+    0;
+}
+
+
+.attribution {
+  font-size:
+    0.9rem;
+}
+
+
+.attribution a {
+  color:
+    var(--navy);
+
+  font-weight:
+    800;
+}
